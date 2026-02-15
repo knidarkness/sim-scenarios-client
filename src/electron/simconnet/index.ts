@@ -6,39 +6,14 @@ import {
   SimConnectPeriod,
   EventFlag,
 } from "node-simconnect";
+import {
+  DEFINITION_ID_ALTITUDE,
+  EVENT_MAP,
+  NOTIFICATION_PRIORITY_HIGHEST,
+  REQUEST_ID_ALTITUDE,
+} from "./types.js";
 
-const DEFINITION_ID_ALTITUDE = 1;
-const REQUEST_ID_ALTITUDE = 1;
-const EVENT_ID_LOGO_LIGHT_SWITCH = 1001;
-const EVENT_CDU_R_L1 = 2001;
-const EVENT_CDU_R_L2 = 2002;
-const EVENT_CDU_R_L3 = 2003;
-const EVENT_CDU_R_L4 = 2004;
-const EVENT_CDU_R_L5 = 2005;
-const EVENT_CDU_R_L6 = 2006;
-const EVENT_CDU_R_R1 = 2007;
-const EVENT_CDU_R_R2 = 2008;
-const EVENT_CDU_R_R3 = 2009;
-const EVENT_CDU_R_R4 = 2010;
-const EVENT_CDU_R_R5 = 2011;
-const EVENT_CDU_R_R6 = 2012;
-const EVENT_CDU_R_EXEC = 2013;
-const PMDG_EVENT_OH_LIGHTS_LOGO = "#69754";
-const THIRD_PARTY_EVENT_ID_MIN = 69632;
-const EVT_CDU_R_L1 = `#${THIRD_PARTY_EVENT_ID_MIN + 606}`;
-const EVT_CDU_R_L2 = `#${THIRD_PARTY_EVENT_ID_MIN + 607}`;
-const EVT_CDU_R_L3 = `#${THIRD_PARTY_EVENT_ID_MIN + 608}`;
-const EVT_CDU_R_L4 = `#${THIRD_PARTY_EVENT_ID_MIN + 609}`;
-const EVT_CDU_R_L5 = `#${THIRD_PARTY_EVENT_ID_MIN + 610}`;
-const EVT_CDU_R_L6 = `#${THIRD_PARTY_EVENT_ID_MIN + 611}`;
-const EVT_CDU_R_R1 = `#${THIRD_PARTY_EVENT_ID_MIN + 612}`;
-const EVT_CDU_R_R2 = `#${THIRD_PARTY_EVENT_ID_MIN + 613}`;
-const EVT_CDU_R_R3 = `#${THIRD_PARTY_EVENT_ID_MIN + 614}`;
-const EVT_CDU_R_R4 = `#${THIRD_PARTY_EVENT_ID_MIN + 615}`;
-const EVT_CDU_R_R5 = `#${THIRD_PARTY_EVENT_ID_MIN + 616}`;
-const EVT_CDU_R_R6 = `#${THIRD_PARTY_EVENT_ID_MIN + 617}`;
-const EVT_CDU_R_EXEC = `#${THIRD_PARTY_EVENT_ID_MIN + 628}`;
-const NOTIFICATION_PRIORITY_HIGHEST = 1;
+
 
 
 
@@ -47,24 +22,16 @@ let simConnection: any = null;
 let latestAltitudeFeet: number | null = null;
 
 function registerMappedEvents(handle: any): void {
-  handle.mapClientEventToSimEvent(
-    EVENT_ID_LOGO_LIGHT_SWITCH,
-    PMDG_EVENT_OH_LIGHTS_LOGO
-  );
+  const eventDefinitions = Object.values(EVENT_MAP) as Array<
+    (typeof EVENT_MAP)[keyof typeof EVENT_MAP]
+  >;
 
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L1, EVT_CDU_R_L1);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L2, EVT_CDU_R_L2);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L3, EVT_CDU_R_L3);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L4, EVT_CDU_R_L4);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L5, EVT_CDU_R_L5);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_L6, EVT_CDU_R_L6);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R1, EVT_CDU_R_R1);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R2, EVT_CDU_R_R2);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R3, EVT_CDU_R_R3);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R4, EVT_CDU_R_R4);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R5, EVT_CDU_R_R5);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_R6, EVT_CDU_R_R6);
-  handle.mapClientEventToSimEvent(EVENT_CDU_R_EXEC, EVT_CDU_R_EXEC);
+  eventDefinitions.forEach((eventDefinition) => {
+    handle.mapClientEventToSimEvent(
+      eventDefinition.clientEventId,
+      eventDefinition.simEventName
+    );
+  });
 }
 
 function sendSimConnectEvent(eventID: number): void {
@@ -94,23 +61,23 @@ export async function setLogoLightOn(): Promise<void> {
     throw new Error("SimConnect is not connected");
   }
 
-  sendSimConnectEvent(EVENT_ID_LOGO_LIGHT_SWITCH);
+  sendSimConnectEvent(EVENT_MAP.LOGO_LIGHT_SWITCH.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_R4);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_R4.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L1);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L1.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L3);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L3.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L3);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L3.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L1);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L1.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L1);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L1.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_L1);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_L1.clientEventId);
   await sleep(1000);
-  sendSimConnectEvent(EVENT_CDU_R_EXEC);
+  sendSimConnectEvent(EVENT_MAP.CDU_R_EXEC.clientEventId);
 }
 
 export function startSimConnect(
