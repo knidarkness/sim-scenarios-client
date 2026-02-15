@@ -1,33 +1,26 @@
-import { useEffect, useState } from "react";
-import useCounterStore from "./store";
+import { useState } from "react";
+import { ActiveScenarioResponse } from "./types";
 
 export default function App() {
-  const { count, increment, decrement, reset } = useCounterStore();
-  const [altitudeFeet, setAltitudeFeet] = useState<number | null>(null);
+  const [token, setToken] = useState<string>("");
   const [logoLightStatus, setLogoLightStatus] = useState<string>("");
 
-  useEffect(() => {
-    let unsubscribe = () => {};
+  const fetchScenarios = async (token: string) => {
+    try {
+      const url = new URL("http://localhost:3000/scenario/activeScenario");
+      url.searchParams.set("token", token);
+      console.log("Fetching scenarios with token:", token);
+      const response = await fetch(url.toString());
+      const scenario = await response.json() as ActiveScenarioResponse;
+      console.log("Scenarios:", scenario.activeScenario);
+    } catch (error) {
+      console.error("Failed to fetch scenarios:", error);
+    }
+  };
 
-    const connectRendererToSim = async () => {
-      if (!window.simconnect) {
-        return;
-      }
-
-      const initialAltitude = await window.simconnect.getCurrentAltitude();
-      setAltitudeFeet(initialAltitude);
-
-      unsubscribe = window.simconnect.onAltitudeUpdate((nextAltitude) => {
-        setAltitudeFeet(nextAltitude);
-      });
-    };
-
-    connectRendererToSim();
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+  const activateScenarios = async (token: string) => {
+    
+  };
 
   const handleLogoLightOn = async () => {
     try {
@@ -46,15 +39,12 @@ export default function App() {
 
   return (
     <main className="app">
-      <h1>Electron + React + Zustand</h1>
-      <p className="value">
-        Player altitude: {altitudeFeet === null ? "Waiting for data..." : `${altitudeFeet.toFixed(2)} ft`}
-      </p>
-      <p className="value">Count: {count}</p>
+      <h1>Sim Scenarios Client</h1>
+      <div>
+        <input type="text" onChange={(e) => setToken(e.target.value)} value={token} />
+        <button onClick={() => fetchScenarios(token)}>Fetch Scenarios</button>
+      </div>
       <div className="actions">
-        <button onClick={decrement}>-1</button>
-        <button onClick={increment}>+1</button>
-        <button onClick={reset}>Reset</button>
         <button onClick={handleLogoLightOn}>logo light on</button>
       </div>
       {logoLightStatus ? <p className="value">{logoLightStatus}</p> : null}
