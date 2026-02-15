@@ -1,13 +1,11 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
-const path = require("path");
-const {
+import {
   open,
   Protocol,
   SimConnectConstants,
   SimConnectDataType,
   SimConnectPeriod,
   EventFlag,
-} = require("node-simconnect");
+} from "node-simconnect";
 
 const DEFINITION_ID_ALTITUDE = 1;
 const REQUEST_ID_ALTITUDE = 1;
@@ -15,11 +13,15 @@ const EVENT_ID_LOGO_LIGHT_SWITCH = 1001;
 const PMDG_EVENT_OH_LIGHTS_LOGO = "#69754";
 const NOTIFICATION_PRIORITY_HIGHEST = 1;
 
-let simConnection = null;
-let latestAltitudeFeet = null;
+let simConnection: any = null;
+let latestAltitudeFeet: number | null = null;
 let isLogoEventMapped = false;
 
-function setLogoLightOn() {
+export function getCurrentAltitude(): number | null {
+  return latestAltitudeFeet;
+}
+
+export function setLogoLightOn(): void {
   if (!simConnection) {
     throw new Error("SimConnect is not connected");
   }
@@ -37,14 +39,9 @@ function setLogoLightOn() {
   );
 }
 
-function broadcastAltitude(altitudeFeet) {
-  const windows = BrowserWindow.getAllWindows();
-  windows.forEach((window) => {
-    window.webContents.send("simconnect:altitude", altitudeFeet);
-  });
-}
-
-function startSimConnectAltitudeLogging() {
+export function startSimConnect(
+  onAltitudeUpdate: (altitudeFeet: number) => void
+): void {
   open("Sim Scenarios Electron", Protocol.KittyHawk)
     .then(({ recvOpen, handle }) => {
       simConnection = handle;
@@ -71,7 +68,7 @@ function startSimConnectAltitudeLogging() {
         SimConnectPeriod.SECOND
       );
 
-      handle.on("simObjectData", (packet) => {
+      handle.on("simObjectData", (packet: any) => {
         if (packet.requestID !== REQUEST_ID_ALTITUDE) {
           return;
         }
@@ -81,10 +78,10 @@ function startSimConnectAltitudeLogging() {
         console.log(
           `[SimConnect] Player altitude: ${altitudeFeet.toFixed(2)} ft`
         );
-        broadcastAltitude(altitudeFeet);
+        onAltitudeUpdate(altitudeFeet);
       });
 
-      handle.on("exception", (exception) => {
+      handle.on("exception", (exception: unknown) => {
         console.error("[SimConnect] Exception:", exception);
       });
 
@@ -99,64 +96,18 @@ function startSimConnectAltitudeLogging() {
         isLogoEventMapped = false;
       });
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       console.error("[SimConnect] Connection failed:", error);
     });
 }
 
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 600,
-    height: 300,
-    resizable: false,
-    useContentSize: true,
-    autoHideMenuBar: true,
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      preload: path.join(__dirname, "preload.cjs"),
-    },
-  });
-
-  const startUrl = process.env.ELECTRON_START_URL;
-  if (startUrl) {
-    win.loadURL(startUrl);
-  } else {
-    win.loadFile(path.join(__dirname, "../dist/index.html"));
+export function stopSimConnect(): void {
+  if (!simConnection) {
+    return;
   }
+
+  simConnection.close();
+  simConnection = null;
+  latestAltitudeFeet = null;
+  isLogoEventMapped = false;
 }
-
-app.whenReady().then(() => {
-  ipcMain.handle("simconnect:getCurrentAltitude", () => latestAltitudeFeet);
-  ipcMain.handle("simconnect:setLogoLightOn", () => {
-    setLogoLightOn();
-    return { ok: true };
-  });
-
-  createWindow();
-  startSimConnectAltitudeLogging();
-
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (simConnection) {
-    simConnection.close();
-    simConnection = null;
-  }
-
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
-app.on("before-quit", () => {
-  if (simConnection) {
-    simConnection.close();
-    simConnection = null;
-  }
-});

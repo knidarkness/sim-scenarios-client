@@ -1,10 +1,10 @@
-const { contextBridge, ipcRenderer } = require("electron");
+import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("simconnect", {
   getCurrentAltitude: () => ipcRenderer.invoke("simconnect:getCurrentAltitude"),
   setLogoLightOn: () => ipcRenderer.invoke("simconnect:setLogoLightOn"),
-  onAltitudeUpdate: (callback) => {
-    const listener = (_event, altitudeFeet) => {
+  onAltitudeUpdate: (callback: (altitudeFeet: number) => void) => {
+    const listener = (_event: unknown, altitudeFeet: number) => {
       callback(altitudeFeet);
     };
 
