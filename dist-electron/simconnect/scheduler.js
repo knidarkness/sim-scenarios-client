@@ -17,6 +17,8 @@ export class EventScheduler {
             airspeedKts: null,
         };
         this.scenarios = [];
+        this.inputEventQueue = [];
+        this.inputEventIntervalHandle = null;
     }
     static getInstance() {
         if (!EventScheduler.instance) {
@@ -113,22 +115,62 @@ export class EventScheduler {
             EVENT_MAP.CDU_R_L1,
             EVENT_MAP.CDU_R_EXEC,
         ];
-        for (const button of eng1FaultButtons) {
-            this.sendSimConnectEvent(button.clientEventId);
-            await sleep(1000);
+        const eng2FaultButtons = [
+            EVENT_MAP.CDU_R_MENU,
+            EVENT_MAP.CDU_R_R4,
+            EVENT_MAP.CDU_R_L1,
+            EVENT_MAP.CDU_R_L3,
+            EVENT_MAP.CDU_R_NEXT_PAGE,
+            EVENT_MAP.CDU_R_L2,
+            EVENT_MAP.CDU_R_L1,
+            EVENT_MAP.CDU_R_L4,
+            EVENT_MAP.CDU_R_L1,
+            EVENT_MAP.CDU_R_EXEC,
+        ];
+        switch (eventName) {
+            case "Engine 1 Fault":
+                this.inputEventQueue.push(...eng1FaultButtons);
+                break;
+            case "Engine 2 Fault":
+                this.inputEventQueue.push(...eng2FaultButtons);
+                break;
+            default:
+                console.warn(`Unknown event name: ${eventName}`);
+                return;
         }
         console.log(`Activating event for scenario: ${eventName}`);
     }
     getSimStatus() {
         return this.latestSimStatus;
     }
+    startTickInputEvents() {
+        this.inputEventIntervalHandle = setInterval(() => {
+            if (!this.simconnect || this.inputEventQueue.length === 0) {
+                return;
+            }
+            const event = this.inputEventQueue.shift();
+            if (event) {
+                this.sendSimConnectEvent(event.clientEventId);
+            }
+        }, 1000);
+    }
+    stopTickInputEvents() {
+        if (this.inputEventIntervalHandle) {
+            clearInterval(this.inputEventIntervalHandle);
+            this.inputEventIntervalHandle = null;
+        }
+    }
     setScenarios(scenario) {
         const scenarios = scenario.activeScenario.scenarios.filter((s) => s.isActive);
         console.log("Active scenarios:", scenarios);
         this.scenarios = scenarios;
+        this.inputEventQueue = [];
+        this.startTickInputEvents();
     }
     clearScenarios() {
+        this.stopTickInputEvents();
         this.scenarios = [];
+        this.inputEventQueue = [];
     }
     sendSimConnectEvent(eventID) {
         if (!this.simconnect) {

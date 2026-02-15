@@ -12,6 +12,7 @@ import {
   ActiveScenarioItem,
   ActiveScenarioResponse,
   EVENT_MAP,
+  EventMapEntry,
   NOTIFICATION_PRIORITY_HIGHEST,
   ScenarioConditionModifier,
 } from "./types.js";
@@ -41,6 +42,8 @@ export class EventScheduler {
     airspeedKts: null,
   };
   private scenarios: ActiveScenarioItem[] = [];
+  private inputEventQueue: EventMapEntry[] = [];
+  private inputEventIntervalHandle : NodeJS.Timeout | null = null;
 
   private constructor() {}
 
@@ -187,21 +190,41 @@ export class EventScheduler {
   }
 
   private async activateEvent(eventName: string) {
-    const eng1FaultButtons = [
-        EVENT_MAP.CDU_R_MENU,
-        EVENT_MAP.CDU_R_R4,
-        EVENT_MAP.CDU_R_L1,
-        EVENT_MAP.CDU_R_L3,
-        EVENT_MAP.CDU_R_NEXT_PAGE,
-        EVENT_MAP.CDU_R_L2,
-        EVENT_MAP.CDU_R_L1,
-        EVENT_MAP.CDU_R_L3,
-        EVENT_MAP.CDU_R_L1,
-        EVENT_MAP.CDU_R_EXEC,
+    const eng1FaultButtons: EventMapEntry[] = [
+      EVENT_MAP.CDU_R_MENU,
+      EVENT_MAP.CDU_R_R4,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_L3,
+      EVENT_MAP.CDU_R_NEXT_PAGE,
+      EVENT_MAP.CDU_R_L2,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_L3,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_EXEC,
     ];
-    for (const button of eng1FaultButtons) {
-      this.sendSimConnectEvent(button.clientEventId);
-      await sleep(1000);
+
+    const eng2FaultButtons: EventMapEntry[] = [
+      EVENT_MAP.CDU_R_MENU,
+      EVENT_MAP.CDU_R_R4,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_L3,
+      EVENT_MAP.CDU_R_NEXT_PAGE,
+      EVENT_MAP.CDU_R_L2,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_L4,
+      EVENT_MAP.CDU_R_L1,
+      EVENT_MAP.CDU_R_EXEC,
+    ];
+    switch (eventName) {
+      case "Engine 1 Fault":
+        this.inputEventQueue.push(...eng1FaultButtons);
+        break;
+      case "Engine 2 Fault":
+        this.inputEventQueue.push(...eng2FaultButtons);
+        break;
+      default:
+        console.warn(`Unknown event name: ${eventName}`);
+        return;
     }
     console.log(`Activating event for scenario: ${eventName}`);
   }
@@ -210,16 +233,38 @@ export class EventScheduler {
     return this.latestSimStatus;
   }
 
+  private startTickInputEvents() {
+    this.inputEventIntervalHandle = setInterval(() => {
+      if (!this.simconnect || this.inputEventQueue.length === 0) {
+        return;
+      }
+      const event = this.inputEventQueue.shift();
+      if (event) {
+        this.sendSimConnectEvent(event.clientEventId);
+      }
+    }, 1000);
+  }
+  private stopTickInputEvents() {
+    if (this.inputEventIntervalHandle) {
+      clearInterval(this.inputEventIntervalHandle);
+      this.inputEventIntervalHandle = null;
+    }
+  }
+
   public setScenarios(scenario: ActiveScenarioResponse): void {
     const scenarios = scenario.activeScenario.scenarios.filter(
       (s) => s.isActive,
     );
     console.log("Active scenarios:", scenarios);
     this.scenarios = scenarios;
+    this.inputEventQueue = [];
+    this.startTickInputEvents();
   }
 
   public clearScenarios(): void {
+      this.stopTickInputEvents();
     this.scenarios = [];
+    this.inputEventQueue = [];
   }
 
   public sendSimConnectEvent(eventID: number): void {

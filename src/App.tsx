@@ -4,6 +4,7 @@ import { ActiveScenarioResponse } from "./types";
 export default function App() {
   const [token, setToken] = useState<string>("");
   const [logoLightStatus, setLogoLightStatus] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
   const fetchScenarios = async (token: string) => {
     try {
@@ -27,7 +28,13 @@ export default function App() {
       return;
     }
     window.simconnect?.setScenarios(scenarios);
+    setIsRunning(true);
   };
+
+  const stopScenarios = () => {
+    window.simconnect?.clearScenarios();
+    setIsRunning(false);
+  }
 
   const handleLogoLightOn = async () => {
     try {
@@ -49,7 +56,13 @@ export default function App() {
       <h1>Sim Scenarios Client</h1>
       <div>
         <input type="text" onChange={(e) => setToken(e.target.value)} value={token} />
-        <button onClick={() => fetchScenarios(token)}>Fetch Scenarios</button>
+        {
+          isRunning ? (
+            <button onClick={stopScenarios}>Stop</button>
+          ) : (
+            <button onClick={() => activateScenarios(token)}>Activate</button>
+          )
+        }
       </div>
       <div className="actions">
         <button onClick={handleLogoLightOn}>logo light on</button>

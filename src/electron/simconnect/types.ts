@@ -4,6 +4,11 @@ export const NOTIFICATION_PRIORITY_HIGHEST = 1;
 
 const THIRD_PARTY_EVENT_ID_MIN = 69632;
 
+export interface EventMapEntry {
+	clientEventId: number;
+	simEventName: string;
+}
+
 export const EVENT_MAP = {
 	LOGO_LIGHT_SWITCH: {
 		clientEventId: 1001,
