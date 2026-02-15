@@ -1,10 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentAltitude = getCurrentAltitude;
-exports.setLogoLightOn = setLogoLightOn;
-exports.startSimConnect = startSimConnect;
-exports.stopSimConnect = stopSimConnect;
-const node_simconnect_1 = require("node-simconnect");
+import { open, Protocol, SimConnectConstants, SimConnectDataType, SimConnectPeriod, EventFlag, } from "node-simconnect";
 const DEFINITION_ID_ALTITUDE = 1;
 const REQUEST_ID_ALTITUDE = 1;
 const EVENT_ID_LOGO_LIGHT_SWITCH = 1001;
@@ -59,15 +53,15 @@ function sendSimConnectEvent(eventID) {
     if (!simConnection) {
         throw new Error("SimConnect is not connected");
     }
-    simConnection.transmitClientEvent(0, eventID, 1, NOTIFICATION_PRIORITY_HIGHEST, node_simconnect_1.EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY);
+    simConnection.transmitClientEvent(0, eventID, 1, NOTIFICATION_PRIORITY_HIGHEST, EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY);
 }
-function getCurrentAltitude() {
+export function getCurrentAltitude() {
     return latestAltitudeFeet;
 }
 async function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-async function setLogoLightOn() {
+export async function setLogoLightOn() {
     if (!simConnection) {
         throw new Error("SimConnect is not connected");
     }
@@ -89,14 +83,14 @@ async function setLogoLightOn() {
     await sleep(1000);
     sendSimConnectEvent(EVENT_CDU_R_EXEC);
 }
-function startSimConnect(onAltitudeUpdate) {
-    (0, node_simconnect_1.open)("Sim Scenarios Electron", node_simconnect_1.Protocol.KittyHawk)
+export function startSimConnect(onAltitudeUpdate) {
+    open("Sim Scenarios Electron", Protocol.KittyHawk)
         .then(({ recvOpen, handle }) => {
         simConnection = handle;
         console.log(`[SimConnect] Connected to ${recvOpen.applicationName}`);
         registerMappedEvents(handle);
-        handle.addToDataDefinition(DEFINITION_ID_ALTITUDE, "PLANE ALTITUDE", "feet", node_simconnect_1.SimConnectDataType.FLOAT64);
-        handle.requestDataOnSimObject(REQUEST_ID_ALTITUDE, DEFINITION_ID_ALTITUDE, node_simconnect_1.SimConnectConstants.OBJECT_ID_USER, node_simconnect_1.SimConnectPeriod.SECOND);
+        handle.addToDataDefinition(DEFINITION_ID_ALTITUDE, "PLANE ALTITUDE", "feet", SimConnectDataType.FLOAT64);
+        handle.requestDataOnSimObject(REQUEST_ID_ALTITUDE, DEFINITION_ID_ALTITUDE, SimConnectConstants.OBJECT_ID_USER, SimConnectPeriod.SECOND);
         handle.on("simObjectData", (packet) => {
             if (packet.requestID !== REQUEST_ID_ALTITUDE) {
                 return;
@@ -121,7 +115,7 @@ function startSimConnect(onAltitudeUpdate) {
         console.error("[SimConnect] Connection failed:", error);
     });
 }
-function stopSimConnect() {
+export function stopSimConnect() {
     if (!simConnection) {
         return;
     }

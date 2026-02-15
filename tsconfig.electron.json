@@ -10,5 +10,5 @@
     "esModuleInterop": true,
     "types": ["node", "electron"]
   },
-  "include": ["src/electron/**/*.cts"]
+  "include": ["src/electron/**/*.ts", "src/electron/**/*.cts"]
 }
