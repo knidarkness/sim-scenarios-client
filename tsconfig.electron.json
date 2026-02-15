@@ -4,11 +4,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist-electron",
-    "rootDir": "electron",
+    "rootDir": "src/electron",
     "strict": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "types": ["node", "electron"]
   },
-  "include": ["electron/**/*.cts"]
+  "include": ["src/electron/**/*.cts"]
 }
