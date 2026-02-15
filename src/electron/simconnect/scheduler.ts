@@ -2,23 +2,45 @@ import {
   EventFlag,
   open,
   Protocol,
+  SimConnectConstants,
   SimConnectConnection,
+  SimConnectDataType,
+  SimConnectPeriod,
 } from "node-simconnect";
-import { EVENT_MAP, NOTIFICATION_PRIORITY_HIGHEST } from "./types.js";
+
+import {
+  ActiveScenarioItem,
+  ActiveScenarioResponse,
+  EVENT_MAP,
+  NOTIFICATION_PRIORITY_HIGHEST,
+  ScenarioConditionModifier,
+} from "./types.js";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-type SimStatus {
-    altitudeFeet: number | null;
-    airspeedKts: number | null;
-}
+const DEFINITION_ID_SIM_STATUS = 9001;
+const REQUEST_ID_SIM_STATUS = 9001;
+
+type SimStatus = {
+  altitudeFeet: number | null;
+  airspeedKts: number | null;
+};
 
 export class EventScheduler {
   private static instance: EventScheduler | null = null;
 
   private simconnect: SimConnectConnection | null = null;
+  private previousSimStatus: SimStatus = {
+    altitudeFeet: null,
+    airspeedKts: null,
+  };
+  private latestSimStatus: SimStatus = {
+    altitudeFeet: null,
+    airspeedKts: null,
+  };
+  private scenarios: ActiveScenarioItem[] = [];
 
   private constructor() {}
 
@@ -43,6 +65,163 @@ export class EventScheduler {
     });
   }
 
+  private startMonitoringSimStatus(handle: SimConnectConnection): void {
+    handle.addToDataDefinition(
+      DEFINITION_ID_SIM_STATUS,
+      "PLANE ALTITUDE",
+      "feet",
+      SimConnectDataType.FLOAT64,
+    );
+
+    handle.addToDataDefinition(
+      DEFINITION_ID_SIM_STATUS,
+      "AIRSPEED INDICATED",
+      "knots",
+      SimConnectDataType.FLOAT64,
+    );
+
+    handle.requestDataOnSimObject(
+      REQUEST_ID_SIM_STATUS,
+      DEFINITION_ID_SIM_STATUS,
+      SimConnectConstants.OBJECT_ID_USER,
+      SimConnectPeriod.SECOND,
+    );
+
+    handle.on("simObjectData", (packet: any) => {
+      if (packet.requestID !== REQUEST_ID_SIM_STATUS) {
+        return;
+      }
+
+      const altitudeFeet = packet.data.readFloat64();
+      const airspeedKts = packet.data.readFloat64();
+      console.log({
+        altitudeFeet,
+        airspeedKts,
+      });
+      this.previousSimStatus = this.latestSimStatus;
+      this.latestSimStatus = {
+        altitudeFeet,
+        airspeedKts,
+      };
+      this.tick();
+    });
+  }
+
+  private tick() {
+    if (!this.simconnect || !this.scenarios || this.scenarios.length === 0) {
+      return;
+    }
+    for (const scenario of this.scenarios) {
+      const conditions =
+        !!scenario.conditions.altitude.value ||
+        !!scenario.conditions.speed.value;
+      if (!conditions) {
+        this.activateEvent(scenario.name);
+        continue;
+      }
+      const altitudeConditionMet =
+        !scenario.conditions.altitude.value ||
+        this.evaluateCondition(
+          scenario.conditions.altitude.modifier,
+          scenario.conditions.altitude.value,
+          this.latestSimStatus.altitudeFeet,
+          this.previousSimStatus.altitudeFeet,
+        );
+
+      const speedConditionMet =
+        !scenario.conditions.speed.value ||
+        this.evaluateCondition(
+          scenario.conditions.speed.modifier,
+          scenario.conditions.speed.value,
+          this.latestSimStatus.airspeedKts,
+          this.previousSimStatus.airspeedKts,
+        );
+
+      if (altitudeConditionMet && speedConditionMet) {
+        this.activateEvent(scenario.name);
+      }
+    }
+  }
+
+  private evaluateCondition(
+    modifier: ScenarioConditionModifier,
+    value: string | null,
+    currentValue: number | null,
+    previousValue: number | null,
+  ): boolean {
+    if (value === null || currentValue === null) {
+      return false;
+    }
+
+    const parsedValue = parseFloat(value);
+    if (isNaN(parsedValue)) {
+      return false;
+    }
+    const increasedThrough =
+      previousValue !== null &&
+      currentValue !== null &&
+      previousValue < parsedValue &&
+      currentValue >= parsedValue;
+    const descendedThrough =
+      previousValue !== null &&
+      currentValue !== null &&
+      previousValue > parsedValue &&
+      currentValue <= parsedValue;
+
+    console.log(
+      `Value: ${currentValue}, Previous: ${previousValue}, Parsed: ${parsedValue}, IncreasedThrough: ${increasedThrough}, DescendedThrough: ${descendedThrough}`,
+    );
+    if (modifier === "Equals") {
+      return (
+        increasedThrough || descendedThrough || currentValue === parsedValue
+      );
+    }
+    if (modifier === "Increasing through") {
+      return increasedThrough;
+    }
+    if (modifier === "Descending through") {
+      return descendedThrough;
+    }
+
+    return false;
+  }
+
+  private async activateEvent(eventName: string) {
+    const eng1FaultButtons = [
+        EVENT_MAP.CDU_R_MENU,
+        EVENT_MAP.CDU_R_R4,
+        EVENT_MAP.CDU_R_L1,
+        EVENT_MAP.CDU_R_L3,
+        EVENT_MAP.CDU_R_NEXT_PAGE,
+        EVENT_MAP.CDU_R_L2,
+        EVENT_MAP.CDU_R_L1,
+        EVENT_MAP.CDU_R_L3,
+        EVENT_MAP.CDU_R_L1,
+        EVENT_MAP.CDU_R_EXEC,
+    ];
+    for (const button of eng1FaultButtons) {
+      this.sendSimConnectEvent(button.clientEventId);
+      await sleep(1000);
+    }
+    console.log(`Activating event for scenario: ${eventName}`);
+  }
+
+  public getSimStatus(): SimStatus {
+    return this.latestSimStatus;
+  }
+
+  public setScenarios(scenario: ActiveScenarioResponse): void {
+    const scenarios = scenario.activeScenario.scenarios.filter(
+      (s) => s.isActive,
+    );
+    console.log("Active scenarios:", scenarios);
+    this.scenarios = scenarios;
+  }
+
+  public clearScenarios(): void {
+    this.scenarios = [];
+  }
+
   public sendSimConnectEvent(eventID: number): void {
     if (!this.simconnect) {
       throw new Error("SimConnect is not connected");
@@ -64,6 +243,7 @@ export class EventScheduler {
     );
     this.simconnect = handle;
     this.registerMappedEvents(handle);
+    this.startMonitoringSimStatus(handle);
     console.log(`[SimConnect] Connected to ${recvOpen.applicationName}`);
 
     handle.on("exception", (exception: unknown) => {
@@ -84,7 +264,10 @@ export class EventScheduler {
     if (this.simconnect) {
       this.simconnect.close();
       this.simconnect = null;
-      console.log("[SimConnect] Connection closed");
+      this.latestSimStatus = {
+        altitudeFeet: null,
+        airspeedKts: null,
+      };
     }
   }
 }

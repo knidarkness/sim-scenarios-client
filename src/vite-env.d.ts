@@ -1,9 +1,10 @@
 /// <reference types="vite/client" />
 
+// import { ActiveScenarioResponse } from "./types";
+
 interface Window {
 	simconnect: {
-		getCurrentAltitude: () => Promise<number | null>;
-		setLogoLightOn: () => Promise<{ ok: true }>;
-		onAltitudeUpdate: (callback: (altitudeFeet: number) => void) => () => void;
+    setScenarios(scenarios: any): unknown;
+	setLogoLightOn: () => Promise<{ ok: true }>;
 	};
 }

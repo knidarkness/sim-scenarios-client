@@ -13,13 +13,20 @@ export default function App() {
       const response = await fetch(url.toString());
       const scenario = await response.json() as ActiveScenarioResponse;
       console.log("Scenarios:", scenario.activeScenario);
+      return scenario;
     } catch (error) {
       console.error("Failed to fetch scenarios:", error);
+      return null;
     }
   };
 
   const activateScenarios = async (token: string) => {
-    
+    const scenarios = await fetchScenarios(token);
+    if (!scenarios) {
+      console.error("No scenarios to activate");
+      return;
+    }
+    window.simconnect?.setScenarios(scenarios);
   };
 
   const handleLogoLightOn = async () => {

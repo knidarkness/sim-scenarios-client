@@ -59,4 +59,16 @@ export const EVENT_MAP = {
         clientEventId: 2013,
         simEventName: `#${THIRD_PARTY_EVENT_ID_MIN + 628}`,
     },
+    CDU_R_MENU: {
+        clientEventId: 2014,
+        simEventName: `#${THIRD_PARTY_EVENT_ID_MIN + 623}`,
+    },
+    CDU_R_PREV_PAGE: {
+        clientEventId: 2015,
+        simEventName: `#${THIRD_PARTY_EVENT_ID_MIN + 631}`,
+    },
+    CDU_R_NEXT_PAGE: {
+        clientEventId: 2016,
+        simEventName: `#${THIRD_PARTY_EVENT_ID_MIN + 632}`,
+    },
 };
