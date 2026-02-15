@@ -6,13 +6,36 @@ const {
   SimConnectConstants,
   SimConnectDataType,
   SimConnectPeriod,
+  EventFlag,
 } = require("node-simconnect");
 
 const DEFINITION_ID_ALTITUDE = 1;
 const REQUEST_ID_ALTITUDE = 1;
+const EVENT_ID_LOGO_LIGHT_SWITCH = 1001;
+const PMDG_EVENT_OH_LIGHTS_LOGO = "#69754";
+const NOTIFICATION_PRIORITY_HIGHEST = 1;
 
 let simConnection = null;
 let latestAltitudeFeet = null;
+let isLogoEventMapped = false;
+
+function setLogoLightOn() {
+  if (!simConnection) {
+    throw new Error("SimConnect is not connected");
+  }
+
+  if (!isLogoEventMapped) {
+    throw new Error("Logo light event is not mapped yet");
+  }
+
+  simConnection.transmitClientEvent(
+    0,
+    EVENT_ID_LOGO_LIGHT_SWITCH,
+    1,
+    NOTIFICATION_PRIORITY_HIGHEST,
+    EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY
+  );
+}
 
 function broadcastAltitude(altitudeFeet) {
   const windows = BrowserWindow.getAllWindows();
@@ -25,7 +48,14 @@ function startSimConnectAltitudeLogging() {
   open("Sim Scenarios Electron", Protocol.KittyHawk)
     .then(({ recvOpen, handle }) => {
       simConnection = handle;
+      isLogoEventMapped = false;
       console.log(`[SimConnect] Connected to ${recvOpen.applicationName}`);
+
+      handle.mapClientEventToSimEvent(
+        EVENT_ID_LOGO_LIGHT_SWITCH,
+        PMDG_EVENT_OH_LIGHTS_LOGO
+      );
+      isLogoEventMapped = true;
 
       handle.addToDataDefinition(
         DEFINITION_ID_ALTITUDE,
@@ -66,6 +96,7 @@ function startSimConnectAltitudeLogging() {
         console.log("[SimConnect] Connection closed");
         simConnection = null;
         latestAltitudeFeet = null;
+        isLogoEventMapped = false;
       });
     })
     .catch((error) => {
@@ -97,6 +128,10 @@ function createWindow() {
 
 app.whenReady().then(() => {
   ipcMain.handle("simconnect:getCurrentAltitude", () => latestAltitudeFeet);
+  ipcMain.handle("simconnect:setLogoLightOn", () => {
+    setLogoLightOn();
+    return { ok: true };
+  });
 
   createWindow();
   startSimConnectAltitudeLogging();
