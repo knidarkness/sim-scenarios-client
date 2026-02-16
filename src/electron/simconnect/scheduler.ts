@@ -43,7 +43,7 @@ export class EventScheduler {
   };
   private scenarios: ActiveScenarioItem[] = [];
   private inputEventQueue: EventMapEntry[] = [];
-  private inputEventIntervalHandle : NodeJS.Timeout | null = null;
+  private inputEventIntervalHandle: NodeJS.Timeout | null = null;
 
   private constructor() {}
 
@@ -53,6 +53,10 @@ export class EventScheduler {
     }
 
     return EventScheduler.instance;
+  }
+
+  public isConnected(): boolean {
+    return this.simconnect !== null;
   }
 
   private registerMappedEvents(handle: SimConnectConnection): void {
@@ -251,7 +255,19 @@ export class EventScheduler {
     }
   }
 
-  public setScenarios(scenario: ActiveScenarioResponse): void {
+  public async setScenarios(scenario: ActiveScenarioResponse): Promise<void> {
+    if (!this.simconnect) {
+      try {
+        await this.connect();
+      } catch (error) {
+        console.error("[SimConnect] Error while connecting:", error);
+        return;
+      }
+    }
+    if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
+      console.warn("No active scenarios found in the response");
+      return;
+    }
     const scenarios = scenario.activeScenario.scenarios.filter(
       (s) => s.isActive,
     );
@@ -262,7 +278,7 @@ export class EventScheduler {
   }
 
   public clearScenarios(): void {
-      this.stopTickInputEvents();
+    this.stopTickInputEvents();
     this.scenarios = [];
     this.inputEventQueue = [];
   }
@@ -297,6 +313,7 @@ export class EventScheduler {
 
     handle.on("quit", () => {
       console.log("[SimConnect] Simulator quit");
+      this.close();
     });
 
     handle.on("close", () => {
@@ -306,13 +323,18 @@ export class EventScheduler {
   }
 
   public close() {
-    if (this.simconnect) {
-      this.simconnect.close();
-      this.simconnect = null;
-      this.latestSimStatus = {
-        altitudeFeet: null,
-        airspeedKts: null,
-      };
+    if (!this.simconnect) {
+      return;
     }
+    try {
+      this.simconnect.close();
+    } catch (error) {
+      console.error("[SimConnect] Error while closing connection:", error);
+    }
+    this.simconnect = null;
+    this.latestSimStatus = {
+      altitudeFeet: null,
+      airspeedKts: null,
+    };
   }
 }

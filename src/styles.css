@@ -14,11 +14,9 @@ body {
 
 .app {
   min-height: 100vh;
-  display: grid;
-  place-content: center;
-  gap: 12px;
+  min-width: 100vw;
   text-align: center;
-  padding: 16px;
+  padding: 24px;
 }
 
 h1 {
@@ -31,10 +29,32 @@ h1 {
   font-size: 1.1rem;
 }
 
-.actions {
+.token-input {
+  width: 90%;
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  justify-content: space-between;
+  margin: 24px auto;
+}
+
+.token-input-field {
+  padding: 8px;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  margin-right: 16px;
+  flex-grow: 1;
+  height: 30px;
+}
+
+.action-button {
+  border: 1px solid #0ea5e9;
+  background: #fff;
+  color: #0c4a6e;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  width: 100px;
+  height: 30px;
 }
 
 button {
@@ -44,6 +64,32 @@ button {
   border-radius: 8px;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+.stop-button {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.activate-button {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.message-box {
+  margin-top: 16px;
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 12px;
+  background: #e0f2fe;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.message-p {
+  margin: 0;
 }
 
 button:hover {

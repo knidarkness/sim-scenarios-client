@@ -6,6 +6,5 @@ interface Window {
 	simconnect: {
     setScenarios(scenarios: any): unknown;
 	clearScenarios(): unknown;
-	setLogoLightOn: () => Promise<{ ok: true }>;
 	};
 }

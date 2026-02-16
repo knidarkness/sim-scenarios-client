@@ -17,7 +17,7 @@ function createWindow(): void {
   const win = new BrowserWindow({
     width: 600,
     height: 300,
-    // resizable: false,
+    resizable: false,
     useContentSize: true,
     autoHideMenuBar: true,
     webPreferences: {
@@ -46,9 +46,9 @@ function createWindow(): void {
   });
 }
 
-app.whenReady().then(() => {
-  ipcMain.handle("simconnect:setScenarios", (_event, scenario: ActiveScenarioResponse) => {
-    eventScheduler.setScenarios(scenario);
+app.whenReady().then(async () => {
+  ipcMain.handle("simconnect:setScenarios", async (_event, scenario: ActiveScenarioResponse) => {
+    await eventScheduler.setScenarios(scenario);
     return { ok: true };
   });
 
@@ -56,15 +56,13 @@ app.whenReady().then(() => {
     eventScheduler.clearScenarios();
     return { ok: true };
   });
-  ipcMain.handle("simconnect:setLogoLightOn", () => {
-    eventScheduler.sendSimConnectEvent(
-      EVENT_MAP.LOGO_LIGHT_SWITCH.clientEventId,
-    );
-    return { ok: true };
-  });
 
   createWindow();
-  eventScheduler.connect();
+  try {
+    await eventScheduler.connect();
+  } catch (error) {
+    console.error("[SimConnect] Error while connecting:", error);
+  }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

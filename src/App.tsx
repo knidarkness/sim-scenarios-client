@@ -3,20 +3,28 @@ import { ActiveScenarioResponse } from "./types";
 
 export default function App() {
   const [token, setToken] = useState<string>("");
-  const [logoLightStatus, setLogoLightStatus] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchScenarios = async (token: string) => {
     try {
+      setError(null);
       const url = new URL("http://localhost:3000/scenario/activeScenario");
       url.searchParams.set("token", token);
       console.log("Fetching scenarios with token:", token);
       const response = await fetch(url.toString());
+      if (response.status !== 200) {
+        setError("Failed to fetch scenarios");
+        return null;
+      }
       const scenario = await response.json() as ActiveScenarioResponse;
       console.log("Scenarios:", scenario.activeScenario);
+      setScenarios(scenario);
       return scenario;
     } catch (error) {
       console.error("Failed to fetch scenarios:", error);
+      setError("Failed to fetch scenarios. Please check the console for details.");
       return null;
     }
   };
@@ -27,7 +35,7 @@ export default function App() {
       console.error("No scenarios to activate");
       return;
     }
-    window.simconnect?.setScenarios(scenarios);
+    await window.simconnect?.setScenarios(scenarios);
     setIsRunning(true);
   };
 
@@ -36,38 +44,26 @@ export default function App() {
     setIsRunning(false);
   }
 
-  const handleLogoLightOn = async () => {
-    try {
-      if (!window.simconnect) {
-        setLogoLightStatus("SimConnect bridge unavailable");
-        return;
-      }
-
-      await window.simconnect.setLogoLightOn();
-      setLogoLightStatus("Logo light event sent");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setLogoLightStatus(`Failed: ${message}`);
-    }
-  };
-
   return (
     <main className="app">
       <h1>Sim Scenarios Client</h1>
-      <div>
-        <input type="text" onChange={(e) => setToken(e.target.value)} value={token} />
+      <div className="token-input">
+        <input type="text" disabled={isRunning} className="token-input-field" onChange={(e) => setToken(e.target.value)} value={token} />
         {
           isRunning ? (
-            <button onClick={stopScenarios}>Stop</button>
+            <button className="action-button stop-button" onClick={stopScenarios}>Stop</button>
           ) : (
-            <button onClick={() => activateScenarios(token)}>Activate</button>
+            <button className="action-button activate-button" onClick={() => activateScenarios(token)}>Activate</button>
           )
         }
       </div>
-      <div className="actions">
-        <button onClick={handleLogoLightOn}>logo light on</button>
+      <div className="message-box">
+        {
+          error ? (
+            <p className="error-message">{error}</p>
+          ) : <p className="message-p">{isRunning ? `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.length || 0} events are scheduled.` : "Scenarios are stopped."}</p>
+        }
       </div>
-      {logoLightStatus ? <p className="value">{logoLightStatus}</p> : null}
     </main>
   );
 }
