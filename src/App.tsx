@@ -10,7 +10,9 @@ export default function App() {
   const fetchScenarios = async (token: string) => {
     try {
       setError(null);
-      const url = new URL("http://localhost:3000/scenario/activeScenario");
+      
+      const url = new URL("https://api.simscenario.net/scenario/activeScenario");
+      // const url = new URL("http://localhost:3000/scenario/activeScenario");
       url.searchParams.set("token", token);
       console.log("Fetching scenarios with token:", token);
       const response = await fetch(url.toString());
