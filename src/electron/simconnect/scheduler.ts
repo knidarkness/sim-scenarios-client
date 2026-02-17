@@ -220,10 +220,10 @@ export class EventScheduler {
       EVENT_MAP.CDU_R_EXEC,
     ];
     switch (eventName) {
-      case "Engine 1 Fault":
+      case "Engine 1 Failure":
         this.inputEventQueue.push(...eng1FaultButtons);
         break;
-      case "Engine 2 Fault":
+      case "Engine 2 Failure":
         this.inputEventQueue.push(...eng2FaultButtons);
         break;
       default:
