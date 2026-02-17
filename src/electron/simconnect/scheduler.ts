@@ -16,6 +16,7 @@ import {
   NOTIFICATION_PRIORITY_HIGHEST,
   ScenarioConditionModifier,
 } from "./types.js";
+import { PMDG_73X_CDU_COMMANDS } from "./simconnect_events.js";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -118,12 +119,14 @@ export class EventScheduler {
     if (!this.simconnect || !this.scenarios || this.scenarios.length === 0) {
       return;
     }
+    let nextScenarios = this.scenarios;
     for (const scenario of this.scenarios) {
       const conditions =
         !!scenario.conditions.altitude.value ||
         !!scenario.conditions.speed.value;
       if (!conditions) {
         this.activateEvent(scenario.name);
+        nextScenarios = nextScenarios.filter((s) => s !== scenario);
         continue;
       }
       const altitudeConditionMet =
@@ -146,8 +149,10 @@ export class EventScheduler {
 
       if (altitudeConditionMet && speedConditionMet) {
         this.activateEvent(scenario.name);
+        nextScenarios = nextScenarios.filter((s) => s !== scenario);
       }
     }
+    this.scenarios = nextScenarios;
   }
 
   private evaluateCondition(
@@ -194,42 +199,13 @@ export class EventScheduler {
   }
 
   private async activateEvent(eventName: string) {
-    const eng1FaultButtons: EventMapEntry[] = [
-      EVENT_MAP.CDU_R_MENU,
-      EVENT_MAP.CDU_R_R4,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_L3,
-      EVENT_MAP.CDU_R_NEXT_PAGE,
-      EVENT_MAP.CDU_R_L2,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_L3,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_EXEC,
-    ];
 
-    const eng2FaultButtons: EventMapEntry[] = [
-      EVENT_MAP.CDU_R_MENU,
-      EVENT_MAP.CDU_R_R4,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_L3,
-      EVENT_MAP.CDU_R_NEXT_PAGE,
-      EVENT_MAP.CDU_R_L2,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_L4,
-      EVENT_MAP.CDU_R_L1,
-      EVENT_MAP.CDU_R_EXEC,
-    ];
-    switch (eventName) {
-      case "Engine 1 Failure":
-        this.inputEventQueue.push(...eng1FaultButtons);
-        break;
-      case "Engine 2 Failure":
-        this.inputEventQueue.push(...eng2FaultButtons);
-        break;
-      default:
-        console.warn(`Unknown event name: ${eventName}`);
-        return;
+    const eventInputs = PMDG_73X_CDU_COMMANDS[eventName as keyof typeof PMDG_73X_CDU_COMMANDS];
+    if (!eventInputs) {
+      console.warn(`No mapped events found for scenario: ${eventName}`);
+      return;
     }
+    this.inputEventQueue.push(...eventInputs);
     console.log(`Activating event for scenario: ${eventName}`);
   }
 

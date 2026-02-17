@@ -61,7 +61,7 @@ export default function App() {
         {
           error ? (
             <p className="error-message">{error}</p>
-          ) : <p className="message-p">{isRunning ? `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.length || 0} events are scheduled.` : "Scenarios are stopped."}</p>
+          ) : <p className="message-p">{isRunning ? `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.filter(s => s.isActive).length || 0} events are scheduled.` : "Scenarios are stopped."}</p>
         }
       </div>
     </main>
