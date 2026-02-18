@@ -9,11 +9,26 @@
     "dev:renderer": "vite",
     "dev:electron": "npm run build:electron && wait-on tcp:5174 && cross-env ELECTRON_START_URL=http://localhost:5174 electron .",
     "build": "npm run build:renderer && npm run build:electron",
+    "dist": "npm run build && electron-builder",
     "build:renderer": "vite build",
     "clean:electron": "rimraf dist-electron",
     "build:electron": "npm run clean:electron && tsc -p tsconfig.electron.json",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.electron.json",
     "start": "npm run build:electron && electron ."
+  },
+  "build": {
+    "appId": "com.yourname.sim-scenarios",
+    "productName": "Sim Scenarios",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    }
   },
   "dependencies": {
     "node-simconnect": "^4.0.0",
@@ -28,6 +43,7 @@
     "concurrently": "^9.0.1",
     "cross-env": "^7.0.3",
     "electron": "^33.2.1",
+    "electron-builder": "^26.8.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.6.3",
     "vite": "^5.4.8",
