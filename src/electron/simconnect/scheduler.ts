@@ -16,7 +16,7 @@ import {
   NOTIFICATION_PRIORITY_HIGHEST,
   ScenarioConditionModifier,
 } from "./types";
-import { PMDG_73X_CDU_COMMANDS } from "./simconnect_events";
+import { getFaultPathForEvent, PMDG_73X_CDU_COMMANDS } from "./simconnect_events";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -200,12 +200,18 @@ export class EventScheduler {
 
   private async activateEvent(eventName: string) {
 
-    const eventInputs = PMDG_73X_CDU_COMMANDS[eventName as keyof typeof PMDG_73X_CDU_COMMANDS];
-    if (!eventInputs) {
+    const inputs = getFaultPathForEvent("PMDG73X", eventName);
+    if (!inputs) {
       console.warn(`No mapped events found for scenario: ${eventName}`);
       return;
     }
-    this.inputEventQueue.push(...eventInputs);
+    console.log(inputs);
+    // const eventInputs = PMDG_73X_CDU_COMMANDS[eventName as keyof typeof PMDG_73X_CDU_COMMANDS];
+    // if (!eventInputs) {
+    //   console.warn(`No mapped events found for scenario: ${eventName}`);
+    //   return;
+    // }
+    this.inputEventQueue.push(...inputs);
     console.log(`Activating event for scenario: ${eventName}`);
   }
 
