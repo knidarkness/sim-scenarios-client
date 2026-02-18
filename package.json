@@ -12,7 +12,7 @@
     "dist": "npm run build && electron-builder",
     "build:renderer": "vite build",
     "clean:electron": "rimraf dist-electron",
-    "build:electron": "npm run clean:electron && tsc -p tsconfig.electron.json",
+    "build:electron": "npm run clean:electron && node build-electron.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.electron.json",
     "start": "npm run build:electron && electron ."
   },

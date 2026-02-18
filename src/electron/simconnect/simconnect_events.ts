@@ -1,4 +1,4 @@
-import { EVENT_MAP } from "./types.js";
+import { EVENT_MAP } from "./types";
 
 export const PMDDG_73X_HELPER_EVENTS = {
   OPEN_FAULT_MENU: [

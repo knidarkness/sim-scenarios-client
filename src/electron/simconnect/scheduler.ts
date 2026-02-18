@@ -15,8 +15,8 @@ import {
   EventMapEntry,
   NOTIFICATION_PRIORITY_HIGHEST,
   ScenarioConditionModifier,
-} from "./types.js";
-import { PMDG_73X_CDU_COMMANDS } from "./simconnect_events.js";
+} from "./types";
+import { PMDG_73X_CDU_COMMANDS } from "./simconnect_events";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
