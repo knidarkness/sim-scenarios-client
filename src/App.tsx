@@ -11,8 +11,10 @@ export default function App() {
     try {
       setError(null);
       
-      const url = new URL("https://api.simscenario.net/scenario/activeScenario");
-      // const url = new URL("http://localhost:3000/scenario/activeScenario");
+      const apiBase = import.meta.env.DEV
+        ? import.meta.env.VITE_API_BASE_URL
+        : "https://api.simscenario.net";
+      const url = new URL(`${apiBase}/scenario/activeScenario`);
       url.searchParams.set("token", token);
       console.log("Fetching scenarios with token:", token);
       const response = await fetch(url.toString());
