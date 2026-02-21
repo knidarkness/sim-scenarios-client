@@ -1,3 +1,8 @@
+export interface PlaneEventHandler {
+  activateEvent(eventName: string): void;
+  stop(): void;
+}
+
 export type AircraftEventsList = {
     aircraft: string;
     categories: EventCategory[];

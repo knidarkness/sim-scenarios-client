@@ -13,7 +13,8 @@ import {
   ActiveScenarioResponse,
   ScenarioConditionModifier,
 } from "./types";
-import { getAircraftEventHandler, PlaneEventHandler } from "./plane_events";
+import { PlaneEventHandler} from "./plane_events/types";
+import { getAircraftEventHandler } from "./plane_events";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));

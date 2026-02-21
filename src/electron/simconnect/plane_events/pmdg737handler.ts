@@ -1,8 +1,9 @@
 import { EventFlag, SimConnectConnection } from "node-simconnect";
 import { EVENT_MAP, EventMapEntry, NOTIFICATION_PRIORITY_HIGHEST } from "../types";
 import { getFaultPathForEvent } from "../simconnect_events";
+import { PlaneEventHandler } from "./types";
 
-export class PMDG737CommandHandler {
+export class PMDG737CommandHandler implements PlaneEventHandler {
   simConnectConnection: SimConnectConnection;
 
   private inputEventQueue: EventMapEntry[] = [];
@@ -26,7 +27,7 @@ export class PMDG737CommandHandler {
     });
   }
 
-  public async activateEvent(eventName: string): Promise<void> {
+  public activateEvent(eventName: string): void {
     const inputs = getFaultPathForEvent("PMDG73X", eventName);
     if (!inputs) {
       console.warn(`No mapped events found for scenario: ${eventName}`);
