@@ -11,12 +11,9 @@ import {
 import {
   ActiveScenarioItem,
   ActiveScenarioResponse,
-  EVENT_MAP,
-  EventMapEntry,
-  NOTIFICATION_PRIORITY_HIGHEST,
   ScenarioConditionModifier,
 } from "./types";
-import { getFaultPathForEvent, PMDG_73X_CDU_COMMANDS } from "./simconnect_events";
+import { getAircraftEventHandler, PlaneEventHandler } from "./plane_events";
 
 const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,9 +40,8 @@ export class EventScheduler {
     airspeedKts: null,
   };
   private scenarios: ActiveScenarioItem[] = [];
-  private inputEventQueue: EventMapEntry[] = [];
-  private inputEventIntervalHandle: NodeJS.Timeout | null = null;
-
+  private aircraft: string | undefined = "PMDG73X";
+  private aircraftEventHandler: PlaneEventHandler | null = null;
   private constructor() {}
 
   static getInstance(): EventScheduler {
@@ -58,19 +54,6 @@ export class EventScheduler {
 
   public isConnected(): boolean {
     return this.simconnect !== null;
-  }
-
-  private registerMappedEvents(handle: SimConnectConnection): void {
-    const eventDefinitions = Object.values(EVENT_MAP) as Array<
-      (typeof EVENT_MAP)[keyof typeof EVENT_MAP]
-    >;
-
-    eventDefinitions.forEach((eventDefinition) => {
-      handle.mapClientEventToSimEvent(
-        eventDefinition.clientEventId,
-        eventDefinition.simEventName,
-      );
-    });
   }
 
   private startMonitoringSimStatus(handle: SimConnectConnection): void {
@@ -116,7 +99,12 @@ export class EventScheduler {
   }
 
   private tick() {
-    if (!this.simconnect || !this.scenarios || this.scenarios.length === 0) {
+    if (
+      !this.simconnect ||
+      !this.scenarios ||
+      this.scenarios.length === 0 ||
+      !this.aircraftEventHandler
+    ) {
       return;
     }
     let nextScenarios = this.scenarios;
@@ -125,7 +113,7 @@ export class EventScheduler {
         !!scenario.conditions.altitude.value ||
         !!scenario.conditions.speed.value;
       if (!conditions) {
-        this.activateEvent(scenario.name);
+        this.aircraftEventHandler.activateEvent(scenario.name);
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
         continue;
       }
@@ -148,7 +136,7 @@ export class EventScheduler {
         );
 
       if (altitudeConditionMet && speedConditionMet) {
-        this.activateEvent(scenario.name);
+        this.aircraftEventHandler.activateEvent(scenario.name);
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
       }
     }
@@ -198,54 +186,25 @@ export class EventScheduler {
     return false;
   }
 
-  private async activateEvent(eventName: string) {
-
-    const inputs = getFaultPathForEvent("PMDG73X", eventName);
-    if (!inputs) {
-      console.warn(`No mapped events found for scenario: ${eventName}`);
-      return;
-    }
-    console.log(inputs);
-    // const eventInputs = PMDG_73X_CDU_COMMANDS[eventName as keyof typeof PMDG_73X_CDU_COMMANDS];
-    // if (!eventInputs) {
-    //   console.warn(`No mapped events found for scenario: ${eventName}`);
-    //   return;
-    // }
-    this.inputEventQueue.push(...inputs);
-    console.log(`Activating event for scenario: ${eventName}`);
-  }
-
-  public getSimStatus(): SimStatus {
-    return this.latestSimStatus;
-  }
-
-  private startTickInputEvents() {
-    this.inputEventIntervalHandle = setInterval(() => {
-      if (!this.simconnect || this.inputEventQueue.length === 0) {
-        return;
-      }
-      const event = this.inputEventQueue.shift();
-      if (event) {
-        this.sendSimConnectEvent(event.clientEventId);
-      }
-    }, 1000);
-  }
-  private stopTickInputEvents() {
-    if (this.inputEventIntervalHandle) {
-      clearInterval(this.inputEventIntervalHandle);
-      this.inputEventIntervalHandle = null;
-    }
-  }
-
   public async setScenarios(scenario: ActiveScenarioResponse): Promise<void> {
     if (!this.simconnect) {
       try {
         await this.connect();
+        if (!this.simconnect) {
+          console.error("Failed to establish SimConnect connection");
+          return;
+        }
       } catch (error) {
         console.error("[SimConnect] Error while connecting:", error);
         return;
       }
     }
+
+    this.aircraftEventHandler = getAircraftEventHandler(
+      scenario.activeScenario.aircraft,
+      this.simconnect,
+    );
+
     if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
       console.warn("No active scenarios found in the response");
       return;
@@ -255,28 +214,14 @@ export class EventScheduler {
     );
     console.log("Active scenarios:", scenarios);
     this.scenarios = scenarios;
-    this.inputEventQueue = [];
-    this.startTickInputEvents();
+    this.aircraft = scenario.activeScenario.aircraft;
   }
 
   public clearScenarios(): void {
-    this.stopTickInputEvents();
     this.scenarios = [];
-    this.inputEventQueue = [];
-  }
-
-  public sendSimConnectEvent(eventID: number): void {
-    if (!this.simconnect) {
-      throw new Error("SimConnect is not connected");
+    if (this.aircraftEventHandler) {
+      this.aircraftEventHandler.stop();
     }
-
-    this.simconnect.transmitClientEvent(
-      0,
-      eventID,
-      1,
-      NOTIFICATION_PRIORITY_HIGHEST,
-      EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY,
-    );
   }
 
   public async connect() {
@@ -285,7 +230,6 @@ export class EventScheduler {
       Protocol.KittyHawk,
     );
     this.simconnect = handle;
-    this.registerMappedEvents(handle);
     this.startMonitoringSimStatus(handle);
     console.log(`[SimConnect] Connected to ${recvOpen.applicationName}`);
 

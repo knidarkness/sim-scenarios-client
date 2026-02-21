@@ -101,6 +101,7 @@ export interface ActiveScenarioItem {
 export interface ActiveScenarioData {
 	_id: string;
 	scenarios: ActiveScenarioItem[];
+	aircraft: string;
 	token: string;
 	user: string;
 }
