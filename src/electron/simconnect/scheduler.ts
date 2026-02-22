@@ -214,7 +214,7 @@ export class EventScheduler {
     currentValue: number | null,
     previousValue: number | null,
   ): boolean {
-    if (value === null || currentValue === null) {
+    if (value === null || currentValue === null || previousValue === null) {
       return false;
     }
 
@@ -238,7 +238,8 @@ export class EventScheduler {
     );
     if (modifier === "Equals") {
       return (
-        increasedThrough || descendedThrough || currentValue === parsedValue
+        // Attention: use || increasedThrough === descendedThrough if you want to just check state - and not transition into state.
+        increasedThrough || descendedThrough
       );
     }
     if (modifier === "Increasing through") {

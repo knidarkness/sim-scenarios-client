@@ -17,9 +17,10 @@ function createWindow(): void {
   const icon = app.isPackaged
     ? path.join(process.resourcesPath, "favicon.png")
     : path.join(__dirname, "../favicon.png");
+  const windowTitle = `Sim Scenarios Client v${app.getVersion()}`;
 
   const win = new BrowserWindow({
-    title: "Sim Scenarios Client",
+    title: windowTitle,
     width: 450,
     height: 310,
     resizable: false,

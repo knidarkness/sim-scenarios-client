@@ -1,6 +1,6 @@
 {
-  "name": "client",
-  "version": "1.0.3",
+  "name": "sim-scenarios-client",
+  "version": "1.0.4",
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",
@@ -18,8 +18,10 @@
     "start": "npm run build:electron && electron ."
   },
   "build": {
-    "appId": "com.yourname.sim-scenarios",
-    "productName": "Sim Scenarios",
+    "appId": "com.knidarkness.sim-scenarios",
+    "productName": "Sim Scenarios Client",
+    "executableName": "SimScenarios",
+    "artifactName": "Sim Scenarios Client Setup ${version}.${ext}",
     "icon": "favicon.png",
     "files": [
       "dist/**/*",
@@ -36,6 +38,10 @@
     },
     "win": {
       "target": "nsis"
+    },
+    "nsis": {
+      "shortcutName": "Sim Scenarios Client",
+      "uninstallDisplayName": "Sim Scenarios Client"
     }
   },
   "dependencies": {
