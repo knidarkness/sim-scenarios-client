@@ -45,6 +45,6 @@ if (existsSync(packageLockPath)) {
   writeJson(packageLockPath, packageLock);
 }
 
-writeJson(backendVersionPath, { version: nextVersion });
+writeJson(backendVersionPath, { version: nextVersion, checksum: "" });
 
 console.log(`Version bumped: ${nextVersion}`);
