@@ -53,6 +53,10 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  console.log(`[App] Version: ${app.getVersion()}`);
+
+  ipcMain.handle("app:getVersion", () => app.getVersion());
+
   ipcMain.handle("simconnect:setScenarios", async (_event, scenario: ActiveScenarioResponse) => {
     await eventScheduler.setScenarios(scenario);
     return { ok: true };

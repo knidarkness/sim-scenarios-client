@@ -4,6 +4,7 @@
 
 interface Window {
 	simconnect: {
+    getAppVersion(): Promise<string>;
     setScenarios(scenarios: any): unknown;
 	activateScenarios(): Promise<unknown>;
 	clearScenarios(): unknown;

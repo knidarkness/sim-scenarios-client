@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActiveScenarioResponse } from "../types";
 import useClientAppStore from "../store";
@@ -6,12 +6,30 @@ import useClientAppStore from "../store";
 export default function HomePage() {
     const navigate = useNavigate();
     const [token, setToken] = useState<string>("");
-    
+
     const apiBackend = useClientAppStore((state) => state.backendApiAddress);
 
     const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
 
     const [scenarioState, setScenarioState] = useState<'not-fetched' | 'fetched' | 'activated' | 'fetch-failed'>('not-fetched');
+
+    useEffect(() => {
+        const checkVersion = async () => {
+            const currentAppVersion = await window.simconnect?.getAppVersion();
+            try {
+                const latestAppVersionResponse = await fetch(`${apiBackend}/appversion`);
+                const latestAppVersionData = await latestAppVersionResponse.json();
+                const latestAppVersion = latestAppVersionData.version;
+                if (currentAppVersion && latestAppVersion && currentAppVersion !== latestAppVersion) {
+                    navigate("/update");
+                }
+            } catch (error) {
+                console.error("Failed to check app version:", error);
+            }
+
+        };
+        checkVersion();
+    }, [apiBackend, navigate]);
 
     const fetchScenarios = async (token: string) => {
         try {
