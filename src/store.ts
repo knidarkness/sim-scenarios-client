@@ -9,8 +9,10 @@ type ClientAppStore = {
 };
 
 const useClientAppStore = create<ClientAppStore>((set) => ({
-  fsuipcWebSocketAddress: "",
-  backendApiAddress: "",
+  fsuipcWebSocketAddress: "ws://localhost:2048/fsuipc/",
+  backendApiAddress: import.meta.env.DEV
+                ? import.meta.env.VITE_API_BASE_URL
+                : "https://api.simscenario.net",
   setFsuipcWebSocketAddress: (address: string) => set({ fsuipcWebSocketAddress: address }),
   setBackendApiAddress: (address: string) => set({ backendApiAddress: address }),
 }));

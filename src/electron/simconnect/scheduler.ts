@@ -43,6 +43,13 @@ export class EventScheduler {
   private scenarios: ActiveScenarioItem[] = [];
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private aircraftName: string | null = null;
+
+  private handlerOptions: Record<string, any> = {
+    "BlackSquare Baron 58": {
+      wsAddress: "ws://localhost:2048/fsuipc/",
+    },
+  };
+
   private constructor() {}
 
   static getInstance(): EventScheduler {

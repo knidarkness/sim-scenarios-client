@@ -88,7 +88,14 @@ button:hover {
 
 
 .back-button {
+  border: 1px solid #0ea5e9;
+  background: #fff;
+  color: #0c4a6e;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
   font-size: 0.85rem;
+  height: 30px;
 }
 
 .action-button {

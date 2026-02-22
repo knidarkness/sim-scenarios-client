@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActiveScenarioResponse } from "../types";
+import useClientAppStore from "../store";
 
 export default function HomePage() {
     const navigate = useNavigate();
     const [token, setToken] = useState<string>("");
+    
+    const apiBackend = useClientAppStore((state) => state.backendApiAddress);
+
     const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
 
     const [scenarioState, setScenarioState] = useState<'not-fetched' | 'fetched' | 'activated' | 'fetch-failed'>('not-fetched');
 
     const fetchScenarios = async (token: string) => {
         try {
-            const apiBase = import.meta.env.DEV
-                ? import.meta.env.VITE_API_BASE_URL
-                : "https://api.simscenario.net";
-            const url = new URL(`${apiBase}/scenario/activeScenario`);
+            const url = new URL(`${apiBackend}/scenario/activeScenario`);
             url.searchParams.set("token", token);
             console.log("Fetching scenarios with token:", token);
             const response = await fetch(url.toString());
