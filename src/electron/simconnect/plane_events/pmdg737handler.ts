@@ -42,7 +42,7 @@ export class PMDG737CommandHandler implements PlaneEventHandler {
     console.log(`Activating event for scenario: ${eventName}`);
   }
 
-  private start() {
+  public start() {
     this.inputEventIntervalHandle = setInterval(() => {
       if (!this.simConnectConnection || this.inputEventQueue.length === 0) {
         return;

@@ -41,7 +41,6 @@ export class EventScheduler {
     airspeedKts: null,
   };
   private scenarios: ActiveScenarioItem[] = [];
-  private aircraft: string | undefined = "PMDG73X";
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private constructor() {}
 
@@ -86,10 +85,10 @@ export class EventScheduler {
 
       const altitudeFeet = packet.data.readFloat64();
       const airspeedKts = packet.data.readFloat64();
-      console.log({
-        altitudeFeet,
-        airspeedKts,
-      });
+      // console.log({
+      //   altitudeFeet,
+      //   airspeedKts,
+      // });
       this.previousSimStatus = this.latestSimStatus;
       this.latestSimStatus = {
         altitudeFeet,
@@ -201,10 +200,18 @@ export class EventScheduler {
       }
     }
 
+    console.log(`Setting scenarios for aircraft: ${scenario.activeScenario.aircraft}`);
     this.aircraftEventHandler = getAircraftEventHandler(
       scenario.activeScenario.aircraft,
       this.simconnect,
     );
+
+    if (!this.aircraftEventHandler) {
+      console.warn(
+        `No event handler found for aircraft: ${scenario.activeScenario.aircraft}`,
+      );
+      return;
+    }
 
     if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
       console.warn("No active scenarios found in the response");
@@ -215,7 +222,7 @@ export class EventScheduler {
     );
     console.log("Active scenarios:", scenarios);
     this.scenarios = scenarios;
-    this.aircraft = scenario.activeScenario.aircraft;
+    this.aircraftEventHandler.start();
   }
 
   public clearScenarios(): void {

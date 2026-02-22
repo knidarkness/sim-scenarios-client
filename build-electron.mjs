@@ -10,7 +10,7 @@ await build({
   platform: "node",
   format: "esm",
   outfile: "dist-electron/main.js",
-  external: ["electron", "node-simconnect"],
+  external: ["electron", "node-simconnect", "ws"],
   sourcemap: true,
 });
 

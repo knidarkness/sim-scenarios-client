@@ -34,11 +34,13 @@
     "node-simconnect": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "ws": "^8.19.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.3.2",
     "concurrently": "^9.0.1",
     "cross-env": "^7.0.3",
