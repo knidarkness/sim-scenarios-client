@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 
 function createWindow(): void {
   const win = new BrowserWindow({
+    title: "Sim Scenarios Client",
     width: 450,
     height: 310,
     resizable: false,
