@@ -15,9 +15,9 @@ const __dirname = path.dirname(__filename);
 
 function createWindow(): void {
   const win = new BrowserWindow({
-    width: 600,
-    height: 300,
-    resizable: true,
+    width: 450,
+    height: 310,
+    resizable: false,
     useContentSize: true,
     autoHideMenuBar: true,
     webPreferences: {

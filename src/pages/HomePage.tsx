@@ -73,14 +73,12 @@ export default function HomePage() {
 
     return (
         <main className="app">
-            <div className="main-header">
-                <h1>Sim Scenarios Client</h1>
-            </div>
             <div className="token-input">
+                <label className="token-input-label">Please paste your scenario code below</label>
                 <input
                     type="text"
-                    disabled={scenarioState === 'activated'}
                     className="token-input-field"
+                    disabled={scenarioState === 'activated'}
                     onChange={(e) => setToken(e.target.value)}
                     value={token}
                 />
