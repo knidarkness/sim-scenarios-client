@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { HashRouter } from "react-router-dom";
 import App from "./App";
 import "./styles.css";
 
@@ -8,4 +9,8 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-createRoot(rootElement).render(<App />);
+createRoot(rootElement).render(
+  <HashRouter>
+    <App />
+  </HashRouter>
+);

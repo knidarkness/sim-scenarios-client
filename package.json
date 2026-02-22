@@ -34,6 +34,7 @@
     "node-simconnect": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.13.0",
     "ws": "^8.19.0",
     "zustand": "^5.0.0"
   },

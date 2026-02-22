@@ -13,7 +13,7 @@ import {
   ActiveScenarioResponse,
   ScenarioConditionModifier,
 } from "./types";
-import { PlaneEventHandler} from "./plane_events/types";
+import { PlaneEventHandler } from "./plane_events/types";
 import { getAircraftEventHandler } from "./plane_events";
 
 const sleep = (ms: number): Promise<void> => {
@@ -42,6 +42,7 @@ export class EventScheduler {
   };
   private scenarios: ActiveScenarioItem[] = [];
   private aircraftEventHandler: PlaneEventHandler | null = null;
+  private aircraftName: string | null = null;
   private constructor() {}
 
   static getInstance(): EventScheduler {
@@ -85,10 +86,10 @@ export class EventScheduler {
 
       const altitudeFeet = packet.data.readFloat64();
       const airspeedKts = packet.data.readFloat64();
-      // console.log({
-      //   altitudeFeet,
-      //   airspeedKts,
-      // });
+      console.log({
+        altitudeFeet,
+        airspeedKts,
+      });
       this.previousSimStatus = this.latestSimStatus;
       this.latestSimStatus = {
         altitudeFeet,
@@ -187,6 +188,28 @@ export class EventScheduler {
   }
 
   public async setScenarios(scenario: ActiveScenarioResponse): Promise<void> {
+    console.log(
+      `Setting scenarios for aircraft: ${scenario.activeScenario.aircraft}`,
+    );
+    this.aircraftName = scenario.activeScenario.aircraft;
+
+    if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
+      console.warn("No active scenarios found in the response");
+      return;
+    }
+    const scenarios = scenario.activeScenario.scenarios.filter(
+      (s) => s.isActive,
+    );
+    console.log("Active scenarios:", scenarios);
+    this.scenarios = scenarios;
+  }
+
+  public async startScenario(): Promise<void> {
+    console.log("Starting scenario activation");
+    if (!this.aircraftName || !this.scenarios || this.scenarios.length === 0) {
+      console.warn("No scenarios to activate");
+      return;
+    }
     if (!this.simconnect) {
       try {
         await this.connect();
@@ -200,36 +223,27 @@ export class EventScheduler {
       }
     }
 
-    console.log(`Setting scenarios for aircraft: ${scenario.activeScenario.aircraft}`);
     this.aircraftEventHandler = getAircraftEventHandler(
-      scenario.activeScenario.aircraft,
+      this.aircraftName,
       this.simconnect,
     );
 
     if (!this.aircraftEventHandler) {
-      console.warn(
-        `No event handler found for aircraft: ${scenario.activeScenario.aircraft}`,
-      );
+      console.warn(`No event handler found for aircraft: ${this.aircraftName}`);
       return;
     }
 
-    if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
-      console.warn("No active scenarios found in the response");
-      return;
+    if (this.aircraftEventHandler) {
+      this.aircraftEventHandler.start();
     }
-    const scenarios = scenario.activeScenario.scenarios.filter(
-      (s) => s.isActive,
-    );
-    console.log("Active scenarios:", scenarios);
-    this.scenarios = scenarios;
-    this.aircraftEventHandler.start();
   }
 
   public clearScenarios(): void {
-    this.scenarios = [];
     if (this.aircraftEventHandler) {
       this.aircraftEventHandler.stop();
     }
+    this.close();
+    this.scenarios = [];
   }
 
   public async connect() {

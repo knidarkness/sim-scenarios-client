@@ -17,7 +17,7 @@ function createWindow(): void {
   const win = new BrowserWindow({
     width: 600,
     height: 300,
-    resizable: false,
+    resizable: true,
     useContentSize: true,
     autoHideMenuBar: true,
     webPreferences: {
@@ -57,12 +57,13 @@ app.whenReady().then(async () => {
     return { ok: true };
   });
 
+  ipcMain.handle("simconnect:activateScenarios", async () => {
+    await eventScheduler.startScenario();
+    return { ok: true };
+  });
+
   createWindow();
-  try {
-    await eventScheduler.connect();
-  } catch (error) {
-    console.error("[SimConnect] Error while connecting:", error);
-  }
+
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

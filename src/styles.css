@@ -40,10 +40,55 @@ h1 {
   padding: 8px;
   border: 1px solid #0ea5e9;
   border-radius: 8px;
-  margin-bottom: 16px;
-  margin-right: 16px;
   flex-grow: 1;
   height: 30px;
+}
+
+
+.message-box {
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 12px;
+  background: #e0f2fe;
+  width: 90%;
+  margin: 16px auto;
+}
+
+.message-p {
+  margin: 0;
+}
+
+button:hover {
+  background: #e0f2fe;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto 8px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 90%;
+  margin: 0 auto 8px;
+}
+
+.action-buttons-container {
+  width: 90%;
+  margin: 16px auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+
+.back-button {
+  font-size: 0.85rem;
 }
 
 .action-button {
@@ -57,41 +102,14 @@ h1 {
   height: 30px;
 }
 
-button {
-  border: 1px solid #0ea5e9;
-  background: #fff;
-  color: #0c4a6e;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
 .stop-button {
   background: #fee2e2;
   border-color: #fca5a5;
   color: #991b1b;
 }
 
-.activate-button {
+.activate-button, .prefetch-button {
   background: #d1fae5;
   border-color: #6ee7b7;
   color: #065f46;
-}
-
-.message-box {
-  margin-top: 16px;
-  border: 2px solid #0ea5e9;
-  border-radius: 8px;
-  padding: 12px;
-  background: #e0f2fe;
-  width: 90%;
-  margin: 0 auto;
-}
-
-.message-p {
-  margin: 0;
-}
-
-button:hover {
-  background: #e0f2fe;
 }

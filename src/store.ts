@@ -1,17 +1,18 @@
 import { create } from "zustand";
 
-type CounterStore = {
-  count: number;
-  increment: () => void;
-  decrement: () => void;
-  reset: () => void;
+type ClientAppStore = {
+  fsuipcWebSocketAddress: string;
+  backendApiAddress: string;
+
+  setFsuipcWebSocketAddress: (address: string) => void;
+  setBackendApiAddress: (address: string) => void;
 };
 
-const useCounterStore = create<CounterStore>((set) => ({
-  count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  decrement: () => set((state) => ({ count: state.count - 1 })),
-  reset: () => set({ count: 0 }),
+const useClientAppStore = create<ClientAppStore>((set) => ({
+  fsuipcWebSocketAddress: "",
+  backendApiAddress: "",
+  setFsuipcWebSocketAddress: (address: string) => set({ fsuipcWebSocketAddress: address }),
+  setBackendApiAddress: (address: string) => set({ backendApiAddress: address }),
 }));
 
-export default useCounterStore;
+export default useClientAppStore;
