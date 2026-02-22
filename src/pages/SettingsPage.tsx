@@ -13,6 +13,7 @@ export default function SettingsPage() {
   function handleSave() {
     setFsuipcWebSocketAddress(fsuipcAddress);
     setBackendApiAddress(apiAddress);
+    window.simconnect?.setAircraftHandlerOptions({ wsAddress: fsuipcAddress });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

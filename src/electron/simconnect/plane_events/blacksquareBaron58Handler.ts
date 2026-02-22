@@ -6,10 +6,14 @@ export class BlackSquareBaron58Handler implements PlaneEventHandler {
   simConnectConnection: SimConnectConnection;
   availableEvents: string[] = [];
   ws: WebSocket | null = null;
+  wsAddress: string = "ws://localhost:2048/fsuipc/";
 
-  constructor(simConnectConnection: SimConnectConnection) {
+  constructor(simConnectConnection: SimConnectConnection, handlerOptions?: Record<string, any>) {
     this.simConnectConnection = simConnectConnection;
     this.availableEvents = BLACKSQUARE_BARON58_EVENT_NAMES_FLAT;
+    if (handlerOptions?.wsAddress) {
+      this.wsAddress = handlerOptions.wsAddress;
+    }
   }
 
   activateEvent(eventName: string): void {
@@ -39,7 +43,7 @@ export class BlackSquareBaron58Handler implements PlaneEventHandler {
 
   start(): void {
     console.log("will start websocket connection for Baron 58 event handler");
-    this.ws = new WebSocket("ws://localhost:2048/fsuipc/", "fsuipc");
+    this.ws = new WebSocket(this.wsAddress, "fsuipc");
     this.ws.onopen = async () => {
       console.log(
         "WebSocket connection established for Baron 58 event handler",

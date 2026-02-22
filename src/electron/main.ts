@@ -62,6 +62,11 @@ app.whenReady().then(async () => {
     return { ok: true };
   });
 
+  ipcMain.handle("simconnect:setHandlerOptions", (_event, options: Record<string, any>) => {
+    eventScheduler.setHandlerOptions(options);
+    return { ok: true };
+  });
+
   createWindow();
 
 

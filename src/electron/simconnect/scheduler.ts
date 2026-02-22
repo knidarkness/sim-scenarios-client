@@ -45,9 +45,7 @@ export class EventScheduler {
   private aircraftName: string | null = null;
 
   private handlerOptions: Record<string, any> = {
-    "BlackSquare Baron 58": {
-      wsAddress: "ws://localhost:2048/fsuipc/",
-    },
+    wsAddress: "ws://localhost:2048/fsuipc/",
   };
 
   private constructor() {}
@@ -62,6 +60,13 @@ export class EventScheduler {
 
   public isConnected(): boolean {
     return this.simconnect !== null;
+  }
+
+  public setHandlerOptions(options: Record<string, any>): void {
+    this.handlerOptions = {
+      ...this.handlerOptions,
+      ...options,
+    };
   }
 
   private startMonitoringSimStatus(handle: SimConnectConnection): void {
@@ -233,6 +238,7 @@ export class EventScheduler {
     this.aircraftEventHandler = getAircraftEventHandler(
       this.aircraftName,
       this.simconnect,
+      this.handlerOptions,
     );
 
     if (!this.aircraftEventHandler) {

@@ -7,5 +7,6 @@ interface Window {
     setScenarios(scenarios: any): unknown;
 	activateScenarios(): Promise<unknown>;
 	clearScenarios(): unknown;
+	setAircraftHandlerOptions(options: Record<string, any>): unknown;
 	};
 }
