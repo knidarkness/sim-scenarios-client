@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",
@@ -9,6 +9,7 @@
     "dev:renderer": "vite",
     "dev:electron": "npm run build:electron && wait-on tcp:5174 && cross-env ELECTRON_START_URL=http://localhost:5174 electron .",
     "build": "npm run build:renderer && npm run build:electron",
+    "predist": "node scripts/auto-bump-version.mjs",
     "dist": "npm run build && electron-builder",
     "build:renderer": "vite build",
     "clean:electron": "rimraf dist-electron",

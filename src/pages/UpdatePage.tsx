@@ -1,5 +1,17 @@
+import { useNavigate } from "react-router-dom";
+import useClientAppStore from "../store";
+
+
 export default function UpdatePage() {
+	const navigate = useNavigate();
+	const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
 	const installerUrl = import.meta.env.VITE_INSTALLER_URL ?? 'https://dl.simscenarios.net/Sim%20Scenarios%20Setup.exe';
+	
+	const ignoreUpdate = () => {
+		setIgnoredUpdateVersion(true);
+
+		navigate("/");
+	};
 
 	return (
 		<main className="app">
@@ -19,6 +31,10 @@ export default function UpdatePage() {
 				>
 					Download updated installer
 				</a>
+			</div>
+
+			<div className="action-buttons-container">
+				<button className="action-button" onClick={ignoreUpdate}>Ignore</button>
 			</div>
 		</main>
 	);

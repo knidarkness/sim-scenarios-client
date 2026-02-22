@@ -8,6 +8,8 @@ export default function HomePage() {
     const [token, setToken] = useState<string>("");
 
     const apiBackend = useClientAppStore((state) => state.backendApiAddress);
+    const ignoredUpdateVersion = useClientAppStore((state) => state.ignoredUpdateVersion);
+    const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
 
     const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
 
@@ -15,13 +17,19 @@ export default function HomePage() {
 
     useEffect(() => {
         const checkVersion = async () => {
+            if (ignoredUpdateVersion) {
+                return;
+            }
             const currentAppVersion = await window.simconnect?.getAppVersion();
             try {
                 const latestAppVersionResponse = await fetch(`${apiBackend}/appversion`);
                 const latestAppVersionData = await latestAppVersionResponse.json();
-                const latestAppVersion = latestAppVersionData.version;
-                if (currentAppVersion && latestAppVersion && currentAppVersion !== latestAppVersion) {
-                    navigate("/update");
+                const latestAppVersion: string = latestAppVersionData.version;
+                const patchVersionLatest = parseInt(latestAppVersion.split(".").pop() || "0");
+                const patchVersionCurrent = parseInt(currentAppVersion?.split(".").pop() || "0");
+
+                if (patchVersionLatest > patchVersionCurrent) {
+                    navigate("/update", { state: { latestAppVersion } });
                 }
             } catch (error) {
                 console.error("Failed to check app version:", error);
@@ -29,7 +37,7 @@ export default function HomePage() {
 
         };
         checkVersion();
-    }, [apiBackend, navigate]);
+    }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion]);
 
     const fetchScenarios = async (token: string) => {
         try {
