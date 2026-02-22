@@ -14,6 +14,10 @@ const __dirname = path.dirname(__filename);
 
 
 function createWindow(): void {
+  const icon = app.isPackaged
+    ? path.join(process.resourcesPath, "favicon.png")
+    : path.join(__dirname, "../favicon.png");
+
   const win = new BrowserWindow({
     title: "Sim Scenarios Client",
     width: 450,
@@ -21,6 +25,7 @@ function createWindow(): void {
     resizable: false,
     useContentSize: true,
     autoHideMenuBar: true,
+    icon,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

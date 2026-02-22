@@ -19,9 +19,16 @@
   "build": {
     "appId": "com.yourname.sim-scenarios",
     "productName": "Sim Scenarios",
+    "icon": "favicon.png",
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "favicon.png",
+        "to": "favicon.png"
+      }
     ],
     "directories": {
       "output": "release"
