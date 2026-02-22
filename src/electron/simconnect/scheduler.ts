@@ -26,6 +26,8 @@ const REQUEST_ID_SIM_STATUS = 9001;
 type SimStatus = {
   altitudeFeet: number | null;
   airspeedKts: number | null;
+  gearExtendedPercent: number | null;
+  flapsLeftPercent: number | null;
 };
 
 export class EventScheduler {
@@ -35,10 +37,14 @@ export class EventScheduler {
   private previousSimStatus: SimStatus = {
     altitudeFeet: null,
     airspeedKts: null,
+    gearExtendedPercent: null,
+    flapsLeftPercent: null,
   };
   private latestSimStatus: SimStatus = {
     altitudeFeet: null,
     airspeedKts: null,
+    gearExtendedPercent: null,
+    flapsLeftPercent: null,
   };
   private scenarios: ActiveScenarioItem[] = [];
   private aircraftEventHandler: PlaneEventHandler | null = null;
@@ -84,6 +90,20 @@ export class EventScheduler {
       SimConnectDataType.FLOAT64,
     );
 
+    handle.addToDataDefinition(
+      DEFINITION_ID_SIM_STATUS,
+      "GEAR TOTAL PCT EXTENDED",
+      "percent",
+      SimConnectDataType.FLOAT64,
+    );
+
+    handle.addToDataDefinition(
+      DEFINITION_ID_SIM_STATUS,
+      "TRAILING EDGE FLAPS LEFT PERCENT",
+      "percent",
+      SimConnectDataType.FLOAT64,
+    );
+
     handle.requestDataOnSimObject(
       REQUEST_ID_SIM_STATUS,
       DEFINITION_ID_SIM_STATUS,
@@ -98,14 +118,20 @@ export class EventScheduler {
 
       const altitudeFeet = packet.data.readFloat64();
       const airspeedKts = packet.data.readFloat64();
+      const gearExtendedPercent = packet.data.readFloat64();
+      const flapsLeftPercent = packet.data.readFloat64();
       console.log({
         altitudeFeet,
         airspeedKts,
+        gearExtendedPercent,
+        flapsLeftPercent,
       });
       this.previousSimStatus = this.latestSimStatus;
       this.latestSimStatus = {
         altitudeFeet,
         airspeedKts,
+        gearExtendedPercent,
+        flapsLeftPercent,
       };
       this.tick();
     });
@@ -123,8 +149,11 @@ export class EventScheduler {
     let nextScenarios = this.scenarios;
     for (const scenario of this.scenarios) {
       const conditions =
-        !!scenario.conditions.altitude.value ||
-        !!scenario.conditions.speed.value;
+        scenario.conditions.altitude.value !== null ||
+        scenario.conditions.speed.value !== null ||
+        scenario.conditions.landingGear.value !== null ||
+        scenario.conditions.flapPosition.value !== null;
+
       if (!conditions) {
         this.aircraftEventHandler.activateEvent(scenario.name);
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
@@ -148,7 +177,30 @@ export class EventScheduler {
           this.previousSimStatus.airspeedKts,
         );
 
-      if (altitudeConditionMet && speedConditionMet) {
+      const landingGearConditionMet =
+        scenario.conditions.landingGear.value === null ||
+        this.evaluateCondition(
+          scenario.conditions.landingGear.modifier,
+          scenario.conditions.landingGear.value,
+          this.latestSimStatus.gearExtendedPercent,
+          this.previousSimStatus.gearExtendedPercent,
+        );
+
+      const flapPositionConditionMet =
+        scenario.conditions.flapPosition.value === null ||
+        this.evaluateCondition(
+          scenario.conditions.flapPosition.modifier,
+          scenario.conditions.flapPosition.value,
+          this.latestSimStatus.flapsLeftPercent,
+          this.previousSimStatus.flapsLeftPercent,
+        );
+
+      if (
+        altitudeConditionMet &&
+        speedConditionMet &&
+        landingGearConditionMet &&
+        flapPositionConditionMet
+      ) {
         this.aircraftEventHandler.activateEvent(scenario.name);
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
       }
@@ -212,7 +264,7 @@ export class EventScheduler {
     const scenarios = scenario.activeScenario.scenarios.filter(
       (s) => s.isActive,
     );
-    console.log("Active scenarios:", scenarios);
+    console.log("Active scenarios:", JSON.stringify(scenarios, null, 2));
     this.scenarios = scenarios;
   }
 
@@ -296,6 +348,8 @@ export class EventScheduler {
     this.latestSimStatus = {
       altitudeFeet: null,
       airspeedKts: null,
+      gearExtendedPercent: null,
+      flapsLeftPercent: null,
     };
   }
 }

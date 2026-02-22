@@ -90,6 +90,8 @@ export interface ScenarioCondition {
 export interface ScenarioConditions {
 	altitude: ScenarioCondition;
 	speed: ScenarioCondition;
+	landingGear: ScenarioCondition;
+	flapPosition: ScenarioCondition;
 }
 
 export interface ActiveScenarioItem {
