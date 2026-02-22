@@ -90,7 +90,7 @@ export default function HomePage() {
                 </p>
             </div>
             <div className="action-buttons-container">
-                <button className="action-button settings-button" onClick={() => navigate("/settings")}>Settings</button>
+                <button className="action-button settings-button" disabled={scenarioState === 'activated'} onClick={() => navigate("/settings")}>Settings</button>
                 {scenarioState === 'activated' ? (
                     <button className="action-button stop-button" onClick={stopScenarios}>Stop</button>
                 ) : (
