@@ -3,7 +3,7 @@ import {
   EventMapEntry,
   NOTIFICATION_PRIORITY_HIGHEST,
 } from "../types";
-import { availableEvents, PlaneEventHandler } from "./types";
+import { AircraftEventsList, PlaneEventHandler } from "./types";
 
 export interface PMDGHandlerConfig {
   aircraft: string;
@@ -25,13 +25,31 @@ export abstract class PMDGBaseCommandHandler implements PlaneEventHandler {
   private inputEventQueue: EventMapEntry[] = [];
   private inputEventIntervalHandle: NodeJS.Timeout | null = null;
   private readonly config: PMDGHandlerConfig;
+  private readonly availableEvents: AircraftEventsList[];
 
   constructor(
     simConnectConnection: SimConnectConnection,
     config: PMDGHandlerConfig,
+    availableEvents: AircraftEventsList[],
   ) {
     this.simConnectConnection = simConnectConnection;
     this.config = config;
+    // PMDG CDU fault menus always have "Active" and "All Systems" as the first
+    // two entries (they occupy the first two LSK rows on page 1). The API does
+    // not return these placeholder categories, so we prepend them here so that
+    // all category-index / page-index maths stays correct.
+    this.availableEvents = availableEvents.map((entry) =>
+      entry.aircraft === config.aircraft
+        ? {
+            ...entry,
+            categories: [
+              { name: "Active", events: [] },
+              { name: "All Systems", events: [] },
+              ...entry.categories,
+            ],
+          }
+        : entry,
+    );
     this.registerMappedEvents(simConnectConnection);
     if (this.config.handlerName) {
       console.log(`${this.config.handlerName} initialized`);
@@ -100,7 +118,7 @@ export abstract class PMDGBaseCommandHandler implements PlaneEventHandler {
 
   private getFaultPathForEvent(eventName: string): EventMapEntry[] | null {
     const faultsPerPage = this.config.faultsPerPage ?? 5;
-    const allEvents = availableEvents.find(
+    const allEvents = this.availableEvents.find(
       (eventEntry) => eventEntry.aircraft === this.config.aircraft,
     );
     if (!allEvents) {

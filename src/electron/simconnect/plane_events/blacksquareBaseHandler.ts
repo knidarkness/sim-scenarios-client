@@ -1,5 +1,5 @@
 import { SimConnectConnection } from "node-simconnect";
-import { availableEvents, PlaneEventHandler } from "./types";
+import { AircraftEventsList, PlaneEventHandler } from "./types";
 import WebSocket from "ws";
 
 export abstract class BlackSquareBaseHandler implements PlaneEventHandler {
@@ -13,13 +13,13 @@ export abstract class BlackSquareBaseHandler implements PlaneEventHandler {
   constructor(
     aircraftName: string,
     simConnectConnection: SimConnectConnection,
+    availableEventsList: AircraftEventsList[],
     handlerOptions?: Record<string, any>,
   ) {
     this.aircraftName = aircraftName;
     this.simConnectConnection = simConnectConnection;
-    this.availableEvents = availableEvents
-      .find((a) => a.aircraft === aircraftName)!
-      .categories.flatMap((c) => c.events);
+    this.availableEvents = availableEventsList
+      .find((a) => a.aircraft === aircraftName)!.categories.flatMap((c) => c.events);
     if (handlerOptions?.wsAddress) {
       this.wsAddress = handlerOptions.wsAddress;
     }

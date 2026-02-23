@@ -13,6 +13,7 @@ import {
   ScenarioConditionModifier,
 } from "./types";
 import { PlaneEventHandler } from "./plane_events/types";
+import { AircraftEventsList } from "./plane_events/types";
 import { getAircraftEventHandler } from "./plane_events";
 
 
@@ -45,6 +46,7 @@ export class EventScheduler {
   private scenarios: ActiveScenarioItem[] = [];
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private aircraftName: string | null = null;
+  private availableEvents: AircraftEventsList[] = [];
 
   private handlerOptions: Record<string, any> = {
     wsAddress: "ws://localhost:2048/fsuipc/",
@@ -69,6 +71,11 @@ export class EventScheduler {
       ...this.handlerOptions,
       ...options,
     };
+  }
+
+  public setAvailableEvents(events: AircraftEventsList[]): void {
+    this.availableEvents = events;
+    console.log(`[EventScheduler] Loaded ${events.length} aircraft event lists from API`);
   }
 
   private startMonitoringSimStatus(handle: SimConnectConnection): void {
@@ -287,6 +294,7 @@ export class EventScheduler {
     this.aircraftEventHandler = getAircraftEventHandler(
       this.aircraftName,
       this.simconnect,
+      this.availableEvents,
       this.handlerOptions,
     );
 

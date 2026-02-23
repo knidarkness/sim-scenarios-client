@@ -10,10 +10,30 @@ export default function HomePage() {
     const apiBackend = useClientAppStore((state) => state.backendApiAddress);
     const ignoredUpdateVersion = useClientAppStore((state) => state.ignoredUpdateVersion);
     const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
+    const setAvailableEvents = useClientAppStore((state) => state.setAvailableEvents);
 
     const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
 
     const [scenarioState, setScenarioState] = useState<'not-fetched' | 'fetched' | 'activated' | 'fetch-failed'>('not-fetched');
+
+    useEffect(() => {
+        const fetchAvailableEvents = async () => {
+            try {
+                const response = await fetch(`${apiBackend}/scenario/availableEvents`);
+                if (!response.ok) {
+                    console.error("Failed to fetch available events:", response.status);
+                    return;
+                }
+                const events = await response.json();
+                setAvailableEvents(events);
+                await window.simconnect?.setAvailableEvents(events);
+                console.log("Available events loaded from API:", events.length, "aircraft");
+            } catch (error) {
+                console.error("Failed to fetch available events:", error);
+            }
+        };
+        fetchAvailableEvents();
+    }, [apiBackend, setAvailableEvents]);
 
     useEffect(() => {
         const checkVersion = async () => {

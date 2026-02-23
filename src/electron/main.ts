@@ -78,6 +78,11 @@ app.whenReady().then(async () => {
     return { ok: true };
   });
 
+  ipcMain.handle("simconnect:setAvailableEvents", (_event, events: unknown[]) => {
+    eventScheduler.setAvailableEvents(events as any);
+    return { ok: true };
+  });
+
   createWindow();
 
 

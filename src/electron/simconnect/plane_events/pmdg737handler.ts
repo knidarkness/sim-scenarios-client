@@ -1,5 +1,6 @@
 import { SimConnectConnection } from "node-simconnect";
 import { EventMapEntry } from "../types";
+import { AircraftEventsList } from "./types";
 import { PMDGBaseCommandHandler } from "./pmdgBaseHandler";
 
 export class PMDG737CommandHandler extends PMDGBaseCommandHandler {
@@ -72,7 +73,7 @@ export class PMDG737CommandHandler extends PMDGBaseCommandHandler {
     },
   };
 
-  constructor(simConnectConnection: SimConnectConnection) {
+  constructor(simConnectConnection: SimConnectConnection, availableEvents: AircraftEventsList[]) {
     const eventMap = PMDG737CommandHandler.EVENT_MAP;
 
     super(simConnectConnection, {
@@ -98,6 +99,6 @@ export class PMDG737CommandHandler extends PMDGBaseCommandHandler {
       exitMenu: eventMap.CDU_R_MENU,
       faultsPerPage: 5,
       handlerName: "PMDG737CommandHandler",
-    });
+    }, availableEvents);
   }
 }
