@@ -960,6 +960,152 @@ export const availableEvents = [
     ],
   },
   {
+    aircraft: "Blacksquare Bonanza B36",
+    categories: [
+      {
+        name: "Engine",
+        events: [
+          "ENGINE FAILURE",
+          "ENGINE FIRE",
+          "ENG DRIVEN OIL PUMP",
+          "ENG DRIVEN FUEL PUMP",
+          "STARTER MOTOR",
+          "FUEL FLOW GAUGE",
+          "TACHOMETER",
+          "EGT/CHT",
+          "OIL TEMP/PRESS",
+          "ENGINE MONITOR",
+        ],
+      },
+      {
+        name: "Ignition",
+        events: [
+          "L MAGNETO",
+          "R MAGNETO",
+          "L MAGNETO GROUNDING",
+          "R MAGNETO GROUNDING",
+          "IGNITION SWITCH GROUND",
+        ],
+      },
+      {
+        name: "Electrical",
+        events: [
+          "ALTERNATOR",
+          "STANDBY AVIONICS",
+          "STANDBY ALT FIELD",
+          "STANDBY ALT SENSE",
+          "ACCESSORIES POWER",
+          "VOLTMETER",
+          "ANNUNCIATOR LIGHTS",
+        ],
+      },
+      {
+        name: "Flight Instruments",
+        events: [
+          "VACUUM PUMP",
+          "VACUUM PUMP PARTIAL",
+          "STANDBY VACUUM",
+          "PITOT BLOCKAGE",
+          "STATIC BLOCKAGE",
+          "TURN COORD",
+          "STALL WARNING",
+          "YOKE CHRONOS",
+        ],
+      },
+      {
+        name: "Fuel",
+        events: [
+          "FUEL PUMP",
+          "L TIP TANK X-FER PUMP",
+          "R TIP TANK X-FER PUMP",
+          "L FUEL LEAK",
+          "R FUEL LEAK",
+          "L TIP TANK LEAK",
+          "R TIP TANK LEAK",
+          "L FUEL QTY",
+          "R FUEL QTY",
+        ],
+      },
+      {
+        name: "Brakes",
+        events: ["L BRAKE", "R BRAKE"],
+      },
+      {
+        name: "Landing Gear",
+        events: ["GEAR MOTOR", "GEAR WARNING", "LANDING GEAR POS LIGHTS"],
+      },
+      {
+        name: "Flight Controls",
+        events: ["FLAP MOTOR"],
+      },
+      {
+        name: "Environmental",
+        events: [
+          "CO LEAK",
+          "CO DETECTOR",
+          "CONDENSER LIMIT",
+          "VENT BLOWERS",
+          "AIR CONDITIONER",
+          "AIR CONDITIONING BLOWER",
+        ],
+      },
+      {
+        name: "Doors",
+        events: ["PILOT DOOR LATCH", "CABIN DOOR LATCH"],
+      },
+      {
+        name: "Ice Protection",
+        events: ["PITOT HEAT", "PROP HEAT"],
+      },
+      {
+        name: "Oxygen",
+        events: ["OXYGEN LEAK"],
+      },
+      {
+        name: "Lighting",
+        events: [
+          "STROBE LIGHT",
+          "BEACON LIGHT",
+          "NAV LIGHTS",
+          "TAXI LIGHTS",
+          "LANDING LIGHTS",
+          "PANEL LIGHTS",
+          "CABIN LIGHTS",
+        ],
+      },
+      {
+        name: "Navigation",
+        events: [
+          "NAV 1",
+          "NAV 2",
+          "RNAV",
+          "ADF",
+          "HSI",
+          "DME",
+          "RADAR ALTIMETER",
+          "REMOTE COMPASS",
+          "GYRO SLAVING",
+        ],
+      },
+      {
+        name: "Communications",
+        events: ["COM 1", "COM 2", "AUDIO PANEL", "TRANSPONDER"],
+      },
+      {
+        name: "Autopilot",
+        events: ["AUTOPILOT CONTROLLER", "AUTOPILOT ACTUATORS"],
+      },
+      {
+        name: "Weather Systems",
+        events: ["WX RADAR CONTROLLER", "WX RADAR TRANSCEIVER"],
+      },
+      {
+        name: "Miscellaneous",
+        events: ["ENCODER"],
+      },
+    ],
+  },
+  {
     aircraft: "Blacksquare Bonanza B36 (Turbine)",
     categories: [
       {
