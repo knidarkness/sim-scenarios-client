@@ -1,5 +1,5 @@
 import { EventFlag, SimConnectConnection } from "node-simconnect";
-import { EVENT_MAP, EventMapEntry, NOTIFICATION_PRIORITY_HIGHEST } from "../types";
+import { PMDG_737_EVENT_MAP, EventMapEntry, NOTIFICATION_PRIORITY_HIGHEST } from "../types";
 import { getFaultPathForEvent } from "../simconnect_events";
 import { PlaneEventHandler } from "./types";
 
@@ -15,8 +15,8 @@ export class PMDG737CommandHandler implements PlaneEventHandler {
   }
 
   private registerMappedEvents(handle: SimConnectConnection): void {
-    const eventDefinitions = Object.values(EVENT_MAP) as Array<
-      (typeof EVENT_MAP)[keyof typeof EVENT_MAP]
+    const eventDefinitions = Object.values(PMDG_737_EVENT_MAP) as Array<
+      (typeof PMDG_737_EVENT_MAP)[keyof typeof PMDG_737_EVENT_MAP]
     >;
 
     eventDefinitions.forEach((eventDefinition) => {
