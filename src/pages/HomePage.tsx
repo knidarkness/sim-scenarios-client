@@ -87,9 +87,9 @@ export default function HomePage() {
             case 'not-fetched':
                 return "Please fetch scenario to start";
             case 'fetched':
-                return `Scenarios are ready. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events can be scheduled.`;
+                return `Scenarios are ready. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events can be scheduled for ${scenarios?.activeScenario?.aircraft || "unknown aircraft"}.`;
             case 'activated':
-                return `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events are scheduled.`;
+                return `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events are scheduled for ${scenarios?.activeScenario?.aircraft || "unknown aircraft"}.`;
             case 'fetch-failed':
                 return "Failed to fetch scenarios. Please check the token and try again.";
             default:

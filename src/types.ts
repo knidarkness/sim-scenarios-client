@@ -21,6 +21,7 @@ export interface ActiveScenarioData {
 	scenarios: ActiveScenarioItem[];
 	token: string;
 	user: string;
+	aircraft: string;
 }
 
 export interface ActiveScenarioResponse {
