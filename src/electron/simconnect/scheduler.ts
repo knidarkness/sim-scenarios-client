@@ -44,6 +44,7 @@ export class EventScheduler {
     flapsLeftPercent: null,
   };
   private scenarios: ActiveScenarioItem[] = [];
+  private scenarioConditionsMet: Map<string, Set<string>> = new Map();
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private aircraftName: string | null = null;
   private availableEvents: AircraftEventsList[] = [];
@@ -123,12 +124,12 @@ export class EventScheduler {
       const airspeedKts = packet.data.readFloat64();
       const gearExtendedPercent = packet.data.readFloat64();
       const flapsLeftPercent = packet.data.readFloat64();
-      console.log({
-        altitudeFeet,
-        airspeedKts,
-        gearExtendedPercent,
-        flapsLeftPercent,
-      });
+      // console.log({
+      //   altitudeFeet,
+      //   airspeedKts,
+      //   gearExtendedPercent,
+      //   flapsLeftPercent,
+      // });
       this.previousSimStatus = this.latestSimStatus;
       this.latestSimStatus = {
         altitudeFeet,
@@ -151,61 +152,60 @@ export class EventScheduler {
     }
     let nextScenarios = this.scenarios;
     for (const scenario of this.scenarios) {
-      const conditions =
-        scenario.conditions.altitude.value !== null ||
-        scenario.conditions.speed.value !== null ||
-        scenario.conditions.landingGear.value !== null ||
-        scenario.conditions.flapPosition.value !== null;
+      const satisfied = this.scenarioConditionsMet.get(scenario.name) ?? new Set<string>();
 
-      if (!conditions) {
-        this.aircraftEventHandler.activateEvent(scenario.name);
-        nextScenarios = nextScenarios.filter((s) => s !== scenario);
-        continue;
-      }
-      const altitudeConditionMet =
-        !scenario.conditions.altitude.value ||
+      if (!satisfied.has("altitude") && scenario.conditions.altitude.value &&
         this.evaluateCondition(
           scenario.conditions.altitude.modifier,
           scenario.conditions.altitude.value,
           this.latestSimStatus.altitudeFeet,
           this.previousSimStatus.altitudeFeet,
-        );
+        )) {
+        satisfied.add("altitude");
+        console.log(`[Scheduler] Altitude condition satisfied for "${scenario.name}"`);
+      }
 
-      const speedConditionMet =
-        !scenario.conditions.speed.value ||
+      if (!satisfied.has("speed") && scenario.conditions.speed.value &&
         this.evaluateCondition(
           scenario.conditions.speed.modifier,
           scenario.conditions.speed.value,
           this.latestSimStatus.airspeedKts,
           this.previousSimStatus.airspeedKts,
-        );
+        )) {
+        satisfied.add("speed");
+        console.log(`[Scheduler] Speed condition satisfied for "${scenario.name}"`);
+      }
 
-      const landingGearConditionMet =
-        scenario.conditions.landingGear.value === null ||
+      if (!satisfied.has("landingGear") && scenario.conditions.landingGear.value !== null &&
         this.evaluateCondition(
           scenario.conditions.landingGear.modifier,
           scenario.conditions.landingGear.value,
           this.latestSimStatus.gearExtendedPercent,
           this.previousSimStatus.gearExtendedPercent,
-        );
+        )) {
+        satisfied.add("landingGear");
+        console.log(`[Scheduler] Landing gear condition satisfied for "${scenario.name}"`);
+      }
 
-      const flapPositionConditionMet =
-        scenario.conditions.flapPosition.value === null ||
+      if (!satisfied.has("flapPosition") && scenario.conditions.flapPosition.value !== null &&
         this.evaluateCondition(
           scenario.conditions.flapPosition.modifier,
           scenario.conditions.flapPosition.value,
           this.latestSimStatus.flapsLeftPercent,
           this.previousSimStatus.flapsLeftPercent,
-        );
+        )) {
+        satisfied.add("flapPosition");
+        console.log(`[Scheduler] Flap position condition satisfied for "${scenario.name}"`);
+      }
 
-      if (
-        altitudeConditionMet &&
-        speedConditionMet &&
-        landingGearConditionMet &&
-        flapPositionConditionMet
-      ) {
+      this.scenarioConditionsMet.set(scenario.name, satisfied);
+
+      const allSatisfied = satisfied.size === 4;
+      if (allSatisfied) {
+        console.log(`[Scheduler] All conditions satisfied for "${scenario.name}", activating event`);
         this.aircraftEventHandler.activateEvent(scenario.name);
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
+        this.scenarioConditionsMet.delete(scenario.name);
       }
     }
     this.scenarios = nextScenarios;
@@ -270,6 +270,17 @@ export class EventScheduler {
     );
     console.log("Active scenarios:", JSON.stringify(scenarios, null, 2));
     this.scenarios = scenarios;
+
+    this.scenarioConditionsMet = new Map();
+    for (const s of this.scenarios) {
+      const initialSatisfied = new Set<string>();
+      // Pre-satisfy conditions that have no value configured
+      if (!s.conditions.altitude.value) initialSatisfied.add("altitude");
+      if (!s.conditions.speed.value) initialSatisfied.add("speed");
+      if (s.conditions.landingGear.value === null) initialSatisfied.add("landingGear");
+      if (s.conditions.flapPosition.value === null) initialSatisfied.add("flapPosition");
+      this.scenarioConditionsMet.set(s.name, initialSatisfied);
+    }
   }
 
   public async startScenario(): Promise<void> {
@@ -314,6 +325,7 @@ export class EventScheduler {
     }
     this.close();
     this.scenarios = [];
+    this.scenarioConditionsMet = new Map();
   }
 
   public async connect() {
