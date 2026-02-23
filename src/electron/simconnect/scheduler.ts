@@ -1,5 +1,4 @@
 import {
-  EventFlag,
   open,
   Protocol,
   SimConnectConstants,
@@ -16,9 +15,6 @@ import {
 import { PlaneEventHandler } from "./plane_events/types";
 import { getAircraftEventHandler } from "./plane_events";
 
-const sleep = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
 
 const DEFINITION_ID_SIM_STATUS = 9001;
 const REQUEST_ID_SIM_STATUS = 9001;

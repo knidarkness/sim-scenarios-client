@@ -1,7 +1,10 @@
 import { EventFlag, SimConnectConnection } from "node-simconnect";
-import { PMDG_737_EVENT_MAP, EventMapEntry, NOTIFICATION_PRIORITY_HIGHEST } from "../types";
-import { getFaultPathForEvent } from "../simconnect_events";
-import { PlaneEventHandler } from "./types";
+import {
+  PMDG_737_EVENT_MAP,
+  EventMapEntry,
+  NOTIFICATION_PRIORITY_HIGHEST,
+} from "../types";
+import { availableEvents, PlaneEventHandler } from "./types";
 
 export class PMDG737CommandHandler implements PlaneEventHandler {
   simConnectConnection: SimConnectConnection;
@@ -28,7 +31,7 @@ export class PMDG737CommandHandler implements PlaneEventHandler {
   }
 
   public activateEvent(eventName: string): void {
-    const inputs = getFaultPathForEvent("PMDG73X", eventName);
+    const inputs = this.getFaultPathForEvent(eventName);
     if (!inputs) {
       console.warn(`No mapped events found for scenario: ${eventName}`);
       return;
@@ -74,5 +77,64 @@ export class PMDG737CommandHandler implements PlaneEventHandler {
       NOTIFICATION_PRIORITY_HIGHEST,
       EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY,
     );
+  }
+
+  private getFaultPathForEvent(
+    eventName: string,
+  ): EventMapEntry[] | null {
+    const LSK_ROWS = [
+      PMDG_737_EVENT_MAP.CDU_R_L1,
+      PMDG_737_EVENT_MAP.CDU_R_L2,
+      PMDG_737_EVENT_MAP.CDU_R_L3,
+      PMDG_737_EVENT_MAP.CDU_R_L4,
+      PMDG_737_EVENT_MAP.CDU_R_L5,
+    ];
+
+    const FAULTS_PER_PAGE = 5;
+    const allEvents = availableEvents
+      .filter((e) => e.aircraft === "PMDG73X")
+      .pop();
+    if (!allEvents) {
+      return null;
+    }
+    const eventCategory = allEvents.categories.find((c) =>
+      c.events.some((e) => e === eventName),
+    );
+    if (!eventCategory) {
+      return null;
+    }
+    const categoryIndex = allEvents.categories.findIndex(
+      (c) => c.name === eventCategory.name,
+    );
+    const categoryPageIndex = Math.floor(categoryIndex / FAULTS_PER_PAGE);
+    const categoryIndexInPage = categoryIndex % FAULTS_PER_PAGE;
+
+    const eventIndexInCategory = eventCategory.events.findIndex(
+      (e) => e === eventName,
+    );
+    if (eventIndexInCategory === -1) {
+      return null;
+    }
+    const pageIndex = Math.floor(eventIndexInCategory / FAULTS_PER_PAGE);
+    const indexInPage = eventIndexInCategory % FAULTS_PER_PAGE;
+    console.log(
+      `Event: ${eventName}, Category: ${eventCategory.name}, Category Page: ${categoryPageIndex}, Category Index in Page: ${categoryIndexInPage}, Event Page: ${pageIndex}, Event Index in Page: ${indexInPage}`,
+    );
+
+    const commandsToFault: EventMapEntry[] = [
+      PMDG_737_EVENT_MAP.CDU_R_MENU, // Exit to menu
+      PMDG_737_EVENT_MAP.CDU_R_R4, // Enter PMDG Setup,
+      PMDG_737_EVENT_MAP.CDU_R_L1, // Select Aircraft
+      PMDG_737_EVENT_MAP.CDU_R_L3, // Select Faults
+      ...Array(categoryPageIndex).fill(PMDG_737_EVENT_MAP.CDU_R_NEXT_PAGE),
+      LSK_ROWS[categoryIndexInPage],
+      PMDG_737_EVENT_MAP.CDU_R_L1, // Select programmed
+      ...Array(pageIndex).fill(PMDG_737_EVENT_MAP.CDU_R_NEXT_PAGE),
+      LSK_ROWS[indexInPage],
+      PMDG_737_EVENT_MAP.CDU_R_L1, // Activate
+      PMDG_737_EVENT_MAP.CDU_R_EXEC, // Execute
+      PMDG_737_EVENT_MAP.CDU_R_MENU, // Exit to menu
+    ];
+    return commandsToFault;
   }
 }

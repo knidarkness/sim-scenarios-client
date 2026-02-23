@@ -1,5 +1,9 @@
 import { EventFlag, SimConnectConnection } from "node-simconnect";
-import { PMDG_777_EVENT_MAP_CDU_C, EventMapEntry, NOTIFICATION_PRIORITY_HIGHEST } from "../types";
+import {
+  PMDG_777_EVENT_MAP_CDU_C,
+  EventMapEntry,
+  NOTIFICATION_PRIORITY_HIGHEST,
+} from "../types";
 import { PlaneEventHandler } from "./types";
 import { availableEvents } from "./types";
 
@@ -29,7 +33,7 @@ export class PMDG777CommandHandler implements PlaneEventHandler {
   }
 
   public activateEvent(eventName: string): void {
-    const inputs = getFaultPathForEvent("PMDG777", eventName);
+    const inputs = this.getFaultPathForEvent(eventName);
     if (!inputs) {
       console.warn(`No mapped events found for scenario: ${eventName}`);
       return;
@@ -76,51 +80,65 @@ export class PMDG777CommandHandler implements PlaneEventHandler {
       EventFlag.EVENT_FLAG_GROUPID_IS_PRIORITY,
     );
   }
-}
 
-function getFaultPathForEvent(aircraft: string, eventName: string): EventMapEntry[] | null {
+  private getFaultPathForEvent(
+    eventName: string,
+  ): EventMapEntry[] | null {
     const LSK_ROWS = [
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1,
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L2,
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L3,
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L4,
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L5,
-    ]
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1,
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L2,
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L3,
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L4,
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L5,
+    ];
 
     const FAULTS_PER_PAGE = 5;
-    const allEvents = availableEvents.filter(e => e.aircraft === aircraft).pop();
+    const allEvents = availableEvents
+      .filter((e) => e.aircraft === "PMDG777")
+      .pop();
     if (!allEvents) {
-        return null;
+      return null;
     }
-    const eventCategory = allEvents.categories.find(c => c.events.some(e => e === eventName));
+    const eventCategory = allEvents.categories.find((c) =>
+      c.events.some((e) => e === eventName),
+    );
     if (!eventCategory) {
-        return null;
+      return null;
     }
-    const categoryIndex = allEvents.categories.findIndex(c => c.name === eventCategory.name);
+    const categoryIndex = allEvents.categories.findIndex(
+      (c) => c.name === eventCategory.name,
+    );
     const categoryPageIndex = Math.floor(categoryIndex / FAULTS_PER_PAGE);
     const categoryIndexInPage = categoryIndex % FAULTS_PER_PAGE;
 
-    const eventIndexInCategory = eventCategory.events.findIndex(e => e === eventName);
+    const eventIndexInCategory = eventCategory.events.findIndex(
+      (e) => e === eventName,
+    );
     if (eventIndexInCategory === -1) {
-        return null;
+      return null;
     }
     const pageIndex = Math.floor(eventIndexInCategory / FAULTS_PER_PAGE);
     const indexInPage = eventIndexInCategory % FAULTS_PER_PAGE;
-    console.log(`Event: ${eventName}, Category: ${eventCategory.name}, Category Page: ${categoryPageIndex}, Category Index in Page: ${categoryIndexInPage}, Event Page: ${pageIndex}, Event Index in Page: ${indexInPage}`);
-    
+    console.log(
+      `Event: ${eventName}, Category: ${eventCategory.name}, Category Page: ${categoryPageIndex}, Category Index in Page: ${categoryIndexInPage}, Event Page: ${pageIndex}, Event Index in Page: ${indexInPage}`,
+    );
+
     const commandsToFault: EventMapEntry[] = [
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_MENU, // Exit to menu
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_R5, // Enter PMDG Setup,
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Select Aircraft
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L3, // Select Faults
-        ...Array(categoryPageIndex).fill(PMDG_777_EVENT_MAP_CDU_C.CDU_C_NEXT_PAGE),
-        LSK_ROWS[categoryIndexInPage],
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Select programmed
-        ...Array(pageIndex).fill(PMDG_777_EVENT_MAP_CDU_C.CDU_C_NEXT_PAGE),
-        LSK_ROWS[indexInPage],
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Activate
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_EXEC, // Execute
-        PMDG_777_EVENT_MAP_CDU_C.CDU_C_MENU, // Exit to menu
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_MENU, // Exit to menu
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_R5, // Enter PMDG Setup,
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Select Aircraft
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L3, // Select Faults
+      ...Array(categoryPageIndex).fill(
+        PMDG_777_EVENT_MAP_CDU_C.CDU_C_NEXT_PAGE,
+      ),
+      LSK_ROWS[categoryIndexInPage],
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Select programmed
+      ...Array(pageIndex).fill(PMDG_777_EVENT_MAP_CDU_C.CDU_C_NEXT_PAGE),
+      LSK_ROWS[indexInPage],
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_L1, // Activate
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_EXEC, // Execute
+      PMDG_777_EVENT_MAP_CDU_C.CDU_C_MENU, // Exit to menu
     ];
     return commandsToFault;
+  }
 }
