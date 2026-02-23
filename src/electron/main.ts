@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 
 
 import { EventScheduler } from "./simconnect/scheduler";
-import { EVENT_MAP } from "./simconnect/types";
 import { ActiveScenarioResponse } from "./simconnect/types";
 
 const eventScheduler = EventScheduler.getInstance();
