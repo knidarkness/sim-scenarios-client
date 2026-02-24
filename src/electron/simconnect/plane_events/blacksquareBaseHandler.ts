@@ -1,10 +1,10 @@
 import { SimConnectConnection } from "node-simconnect";
-import { AircraftEventsList, PlaneEventHandler } from "./types";
+import { AircraftEvent, AircraftEventsList, PlaneEventHandler } from "./types";
 import WebSocket from "ws";
 
 export abstract class BlackSquareBaseHandler implements PlaneEventHandler {
   simConnectConnection: SimConnectConnection;
-  availableEvents: string[] = [];
+  availableEvents: AircraftEvent[] = [];
   ws: WebSocket | null = null;
   wsAddress: string = "ws://localhost:2048/fsuipc/";
 
@@ -70,7 +70,7 @@ export abstract class BlackSquareBaseHandler implements PlaneEventHandler {
 
   private getSimEventFSUIPCCalcCode(eventName: string): string | null {
     const eventEntry = this.availableEvents.find(
-      (event) => event === eventName,
+      (event) => event.name === eventName,
     );
 
     if (!eventEntry) {

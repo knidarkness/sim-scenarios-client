@@ -126,7 +126,7 @@ export abstract class PMDGBaseCommandHandler implements PlaneEventHandler {
     }
 
     const eventCategory = allEvents.categories.find((category) =>
-      category.events.some((event) => event === eventName),
+      category.events.some((event) => event.name === eventName),
     );
     if (!eventCategory) {
       return null;
@@ -139,7 +139,7 @@ export abstract class PMDGBaseCommandHandler implements PlaneEventHandler {
     const categoryIndexInPage = categoryIndex % faultsPerPage;
 
     const eventIndexInCategory = eventCategory.events.findIndex(
-      (event) => event === eventName,
+      (event) => event.name === eventName,
     );
     if (eventIndexInCategory === -1) {
       return null;
