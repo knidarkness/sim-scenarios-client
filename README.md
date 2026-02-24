@@ -29,8 +29,8 @@ Electron renderer (React + Vite)
 
 | Aircraft | Handler |
 |---|---|
-| PMDG 737 (all versions) | `pmdg737handler.ts` |
-| PMDG 777 (all versions) | `pmdg777handler.ts` |
+| PMDG 737 | `pmdg737handler.ts` |
+| PMDG 777 | `pmdg777handler.ts` |
 | Black Square Baron 58 | `blacksquareBaron58Handler.ts` |
 | Black Square Bonanza | `blacksquareBonanzaHandler.ts` |
 | Black Square Bonanza Turbine | `blacksquareBonanzaTurbineHandler.ts` |
