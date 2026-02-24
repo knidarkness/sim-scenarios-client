@@ -5,6 +5,7 @@ import { BlackSquareBaron58Handler } from "./blacksquareBaron58Handler";
 import { PMDG777CommandHandler } from "./pmdg777handler";
 import { BlackSquareBonanzaB36Handler } from "./blacksquareBonanzaHandler";
 import { BlackSquareBonanzaB36TurbineHandler } from "./blacksquareBonanzaTurbineHandler";
+import { BlackSquareStarshipHandler } from "./blacksquareStarshipHandler";
 
 export function getAircraftEventHandler(
   aircraft: string,
@@ -17,6 +18,8 @@ export function getAircraftEventHandler(
       return new PMDG777CommandHandler(simConnectConnection, availableEvents);
     case "PMDG73X":
       return new PMDG737CommandHandler(simConnectConnection, availableEvents);
+    case "Blacksquare Starship":
+      return new BlackSquareStarshipHandler(simConnectConnection, availableEvents, handlerOptions);
     case "Blacksquare Baron 58":
       return new BlackSquareBaron58Handler(simConnectConnection, availableEvents, handlerOptions);
     case "Blacksquare Bonanza B36":
