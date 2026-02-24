@@ -11,6 +11,7 @@ export default function HomePage() {
     const ignoredUpdateVersion = useClientAppStore((state) => state.ignoredUpdateVersion);
     const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
     const setAvailableEvents = useClientAppStore((state) => state.setAvailableEvents);
+    const setLatestAppVersion = useClientAppStore((state) => state.setLatestAppVersion);
 
     const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
 
@@ -48,6 +49,8 @@ export default function HomePage() {
                 const patchVersionLatest = parseInt(latestAppVersion.split(".").pop() || "0");
                 const patchVersionCurrent = parseInt(currentAppVersion?.split(".").pop() || "0");
 
+                setLatestAppVersion(latestAppVersion);
+
                 if (patchVersionLatest > patchVersionCurrent) {
                     navigate("/update", { state: { latestAppVersion } });
                 }
@@ -57,7 +60,7 @@ export default function HomePage() {
 
         };
         checkVersion();
-    }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion]);
+    }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion, setLatestAppVersion]);
 
     const fetchScenarios = async (token: string) => {
         try {

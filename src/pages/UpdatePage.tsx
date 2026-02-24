@@ -5,7 +5,9 @@ import useClientAppStore from "../store";
 export default function UpdatePage() {
 	const navigate = useNavigate();
 	const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
-	const installerUrl = import.meta.env.VITE_INSTALLER_URL ?? 'https://dl.simscenarios.net/Sim%20Scenarios%20Setup.exe';
+
+	const latestAppVersion = useClientAppStore((state) => state.latestAppVersion);
+	const downloadLink = `https://dl.simscenarios.net/Sim%20Scenarios%20Client%20Setup%20${latestAppVersion}.exe`;
 	
 	const ignoreUpdate = () => {
 		setIgnoredUpdateVersion(true);
@@ -24,7 +26,7 @@ export default function UpdatePage() {
 					You cannot use this app until you update it to the latest version.
 				</p>
 				<a
-					href={installerUrl}
+					href={downloadLink}
 					target="_blank"
 					rel="noreferrer"
 					style={{ color: "#0c4a6e", fontWeight: 600 }}
