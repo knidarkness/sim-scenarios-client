@@ -22,6 +22,7 @@ const REQUEST_ID_SIM_STATUS = 9001;
 
 type SimStatus = {
   altitudeFeet: number | null;
+  altAboveGroundFeet: number | null;
   airspeedKts: number | null;
   gearExtendedPercent: number | null;
   flapsLeftPercent: number | null;
@@ -33,12 +34,14 @@ export class EventScheduler {
   private simconnect: SimConnectConnection | null = null;
   private previousSimStatus: SimStatus = {
     altitudeFeet: null,
+    altAboveGroundFeet: null,
     airspeedKts: null,
     gearExtendedPercent: null,
     flapsLeftPercent: null,
   };
   private latestSimStatus: SimStatus = {
     altitudeFeet: null,
+    altAboveGroundFeet: null,
     airspeedKts: null,
     gearExtendedPercent: null,
     flapsLeftPercent: null,
@@ -89,6 +92,13 @@ export class EventScheduler {
 
     handle.addToDataDefinition(
       DEFINITION_ID_SIM_STATUS,
+      "PLANE ALT ABOVE GROUND",
+      "feet",
+      SimConnectDataType.FLOAT64,
+    );
+
+    handle.addToDataDefinition(
+      DEFINITION_ID_SIM_STATUS,
       "AIRSPEED INDICATED",
       "knots",
       SimConnectDataType.FLOAT64,
@@ -121,11 +131,13 @@ export class EventScheduler {
       }
 
       const altitudeFeet = packet.data.readFloat64();
+      const altAboveGroundFeet = packet.data.readFloat64();
       const airspeedKts = packet.data.readFloat64();
       const gearExtendedPercent = packet.data.readFloat64();
       const flapsLeftPercent = packet.data.readFloat64();
       // console.log({
       //   altitudeFeet,
+      //   altAboveGroundFeet,
       //   airspeedKts,
       //   gearExtendedPercent,
       //   flapsLeftPercent,
@@ -133,6 +145,7 @@ export class EventScheduler {
       this.previousSimStatus = this.latestSimStatus;
       this.latestSimStatus = {
         altitudeFeet,
+        altAboveGroundFeet,
         airspeedKts,
         gearExtendedPercent,
         flapsLeftPercent,
@@ -364,6 +377,7 @@ export class EventScheduler {
     this.simconnect = null;
     this.latestSimStatus = {
       altitudeFeet: null,
+      altAboveGroundFeet: null,
       airspeedKts: null,
       gearExtendedPercent: null,
       flapsLeftPercent: null,
