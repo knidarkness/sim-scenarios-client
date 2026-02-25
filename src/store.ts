@@ -29,7 +29,7 @@ const useClientAppStore = create<ClientAppStore>((set) => ({
   latestAppVersion: null,
   backendApiAddress: import.meta.env.DEV
     ? import.meta.env.VITE_API_BASE_URL
-    : "https://api.simscenario.net",
+    : "https://api.simscenarios.net",
   ignoredUpdateVersion: false,
   setFenixApiURL: (url: string) => set({ fenixApiURL: url }),
   setFsuipcWebSocketAddress: (address: string) =>

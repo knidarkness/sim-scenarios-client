@@ -1,6 +1,6 @@
 # Sim Scenarios Client
 
-A Windows desktop application for Microsoft Flight Simulator (MSFS) that executes training scenarios created on [simscenario.net](https://simscenario.net). It monitors live simulator data and triggers aircraft system failures when defined flight conditions are met.
+A Windows desktop application for Microsoft Flight Simulator (MSFS) that executes training scenarios created on [simscenarios.net](https://simscenarios.net). It monitors live simulator data and triggers aircraft system failures when defined flight conditions are met.
 
 ## How it works
 
