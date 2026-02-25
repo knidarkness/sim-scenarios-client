@@ -6,6 +6,7 @@ import { PMDG777CommandHandler } from "./pmdg777handler";
 import { BlackSquareBonanzaB36Handler } from "./blacksquareBonanzaHandler";
 import { BlackSquareBonanzaB36TurbineHandler } from "./blacksquareBonanzaTurbineHandler";
 import { BlackSquareStarshipHandler } from "./blacksquareStarshipHandler";
+import { FenixA320Handler } from "./fenixA320Handler";
 
 export function getAircraftEventHandler(
   aircraft: string,
@@ -14,6 +15,8 @@ export function getAircraftEventHandler(
   handlerOptions?: Record<string, any>,
 ): PlaneEventHandler | null {
   switch (aircraft) {
+    case "Fenix A320":
+      return new FenixA320Handler(availableEvents, handlerOptions);
     case "PMDG777":
       return new PMDG777CommandHandler(simConnectConnection, availableEvents);
     case "PMDG73X":

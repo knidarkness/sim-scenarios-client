@@ -5,6 +5,7 @@ export interface PlaneEventHandler {
 }
 
 export type AircraftEvent = {
+  id: string;
   name: string;
   shortDescription?: string;
   longDescription?: string;
