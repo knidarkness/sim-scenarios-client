@@ -9,9 +9,9 @@ import {
 
 import {
   ActiveScenarioItem,
-  ActiveScenarioResponse,
+  ActiveScenarioData,
   ScenarioConditionModifier,
-} from "./types";
+} from "../../types";
 import { PlaneEventHandler } from "./plane_events/types";
 import { AircraftEventsList } from "./plane_events/types";
 import { getAircraftEventHandler } from "./plane_events";
@@ -255,17 +255,17 @@ export class EventScheduler {
     return false;
   }
 
-  public async setScenarios(scenario: ActiveScenarioResponse): Promise<void> {
+  public async setScenarios(scenario: ActiveScenarioData): Promise<void> {
     console.log(
-      `Setting scenarios for aircraft: ${scenario.activeScenario.aircraft}`,
+      `Setting scenarios for aircraft: ${scenario.aircraft}`,
     );
-    this.aircraftName = scenario.activeScenario.aircraft;
+    this.aircraftName = scenario.aircraft;
 
-    if (!scenario?.activeScenario || !scenario.activeScenario?.scenarios) {
+    if (!scenario?.events || scenario.events.length === 0) {
       console.warn("No active scenarios found in the response");
       return;
     }
-    const scenarios = scenario.activeScenario.scenarios.filter(
+    const scenarios = scenario.events.filter(
       (s) => s.isActive,
     );
     console.log("Active scenarios:", JSON.stringify(scenarios, null, 2));

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ActiveScenarioResponse } from "../types";
+import { ActiveScenarioData } from "../types";
 import useClientAppStore from "../store";
 
 export default function HomePage() {
@@ -13,7 +13,7 @@ export default function HomePage() {
     const setAvailableEvents = useClientAppStore((state) => state.setAvailableEvents);
     const setLatestAppVersion = useClientAppStore((state) => state.setLatestAppVersion);
 
-    const [scenarios, setScenarios] = useState<ActiveScenarioResponse | null>(null);
+    const [scenarios, setScenarios] = useState<ActiveScenarioData | null>(null);
 
     const [scenarioState, setScenarioState] = useState<'not-fetched' | 'fetched' | 'activated' | 'fetch-failed'>('not-fetched');
 
@@ -72,8 +72,8 @@ export default function HomePage() {
                 setScenarioState('fetch-failed');
                 return null;
             }
-            const scenario = await response.json() as ActiveScenarioResponse;
-            console.log("Scenarios:", scenario.activeScenario);
+            const scenario = await response.json() as ActiveScenarioData;
+            console.log("Scenarios:", scenario);
             setScenarios(scenario);
             return scenario;
         } catch (error) {
@@ -110,9 +110,9 @@ export default function HomePage() {
             case 'not-fetched':
                 return "Please fetch scenario to start";
             case 'fetched':
-                return `Scenarios are ready. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events can be scheduled for ${scenarios?.activeScenario?.aircraft || "unknown aircraft"}.`;
+                return `Scenarios are ready. ${scenarios?.events?.filter((s) => s.isActive).length || 0} events can be scheduled for ${scenarios?.aircraft || "unknown aircraft"}.`;
             case 'activated':
-                return `Scenarios are running. ${scenarios?.activeScenario?.scenarios?.filter((s) => s.isActive).length || 0} events are scheduled for ${scenarios?.activeScenario?.aircraft || "unknown aircraft"}.`;
+                return `Scenarios are running. ${scenarios?.events?.filter((s) => s.isActive).length || 0} events are scheduled for ${scenarios?.aircraft || "unknown aircraft"}.`;
             case 'fetch-failed':
                 return "Failed to fetch scenarios. Please check the token and try again.";
             default:

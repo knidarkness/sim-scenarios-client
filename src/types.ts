@@ -8,6 +8,8 @@ export interface ScenarioCondition {
 export interface ScenarioConditions {
 	altitude: ScenarioCondition;
 	speed: ScenarioCondition;
+	landingGear: ScenarioCondition;
+	flapPosition: ScenarioCondition;
 }
 
 export interface ActiveScenarioItem {
@@ -18,12 +20,8 @@ export interface ActiveScenarioItem {
 
 export interface ActiveScenarioData {
 	_id: string;
-	scenarios: ActiveScenarioItem[];
+	events: ActiveScenarioItem[];
 	token: string;
 	user: string;
 	aircraft: string;
-}
-
-export interface ActiveScenarioResponse {
-	activeScenario: ActiveScenarioData;
 }

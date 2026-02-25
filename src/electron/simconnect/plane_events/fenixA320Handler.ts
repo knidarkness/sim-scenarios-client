@@ -1,7 +1,8 @@
 import { AircraftEvent, AircraftEventsList, PlaneEventHandler } from "./types";
 
 export class FenixA320Handler implements PlaneEventHandler {
-  availableEvents: AircraftEvent[] = [];
+    private fenixApiURL = "http://localhost:8083";
+    private availableEvents: AircraftEvent[] = [];
 
   constructor(
     availableEvents: AircraftEventsList[],
@@ -11,6 +12,7 @@ export class FenixA320Handler implements PlaneEventHandler {
       "Initializing Fenix A320 Handler with options:",
       handlerOptions,
     );
+    this.fenixApiURL = handlerOptions?.fenixApiURL || this.fenixApiURL;
     this.availableEvents = availableEvents
       .find((a) => a.aircraft === "Fenix A320")!
       .categories.flatMap((c) => c.events);
@@ -25,7 +27,7 @@ export class FenixA320Handler implements PlaneEventHandler {
     }
     console.log(`Event details:`, event);
 
-    fetch("http://localhost:8083/fenix/failures/saveManual", {
+    fetch(`${this.fenixApiURL}/fenix/failures/saveManual`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 
 import { EventScheduler } from "./simconnect/scheduler";
-import { ActiveScenarioResponse } from "./simconnect/types";
+import { ActiveScenarioData } from "../types";
 
 const eventScheduler = EventScheduler.getInstance();
 
@@ -57,7 +57,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle("app:getVersion", () => app.getVersion());
 
-  ipcMain.handle("simconnect:setScenarios", async (_event, scenario: ActiveScenarioResponse) => {
+  ipcMain.handle("simconnect:setScenarios", async (_event, scenario: ActiveScenarioData) => {
     await eventScheduler.setScenarios(scenario);
     return { ok: true };
   });
