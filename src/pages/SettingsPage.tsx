@@ -4,16 +4,19 @@ import useClientAppStore from "../store";
 
 export default function SettingsPage() {
     const navigate = useNavigate();
-    const { fsuipcWebSocketAddress, backendApiAddress, setFsuipcWebSocketAddress, setBackendApiAddress } = useClientAppStore();
+    const { fsuipcWebSocketAddress, backendApiAddress, setFsuipcWebSocketAddress, setBackendApiAddress, fenixApiURL, setFenixApiURL } = useClientAppStore();
 
     const [fsuipcAddress, setFsuipcAddress] = useState(fsuipcWebSocketAddress);
     const [apiAddress, setApiAddress] = useState(backendApiAddress);
+    const [fenixAddress, setFenixAddress] = useState(fenixApiURL);
+    
     const [saved, setSaved] = useState(false);
 
     function handleSave() {
         setFsuipcWebSocketAddress(fsuipcAddress);
         setBackendApiAddress(apiAddress);
-        window.simconnect?.setAircraftHandlerOptions({ wsAddress: fsuipcAddress });
+        setFenixApiURL(fenixAddress);
+        window.simconnect?.setAircraftHandlerOptions({ wsAddress: fsuipcAddress, fenixApiURL: fenixAddress });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     }
@@ -36,6 +39,20 @@ export default function SettingsPage() {
                         placeholder="e.g. ws://localhost:2048/fsuipc/"
                         value={fsuipcAddress}
                         onChange={(e) => setFsuipcAddress(e.target.value)}
+                    />
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
+                        Fenix API Address
+                    </label>
+                    <input
+                        className="token-input-field"
+                        style={{ width: "100%" }}
+                        type="text"
+                        placeholder="e.g. http://localhost:8083"
+                        value={fenixAddress}
+                        onChange={(e) => setFenixAddress(e.target.value)}
                     />
                 </div>
 

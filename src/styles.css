@@ -10,11 +10,12 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 
 .app {
   min-height: 100vh;
-  min-width: 100vw;
+  width: 100%;
   text-align: center;
   padding: 12px;
 }
