@@ -5,11 +5,17 @@ export interface ScenarioCondition {
 	value: string | null;
 }
 
+export interface ScenarioConditionWithText extends ScenarioCondition {
+	text: string | null;
+}
+
 export interface ScenarioConditions {
 	altitude: ScenarioCondition;
+	altitudeAgl: ScenarioCondition;
 	speed: ScenarioCondition;
 	landingGear: ScenarioCondition;
 	flapPosition: ScenarioCondition;
+	navAidDistance: ScenarioConditionWithText;
 }
 
 export interface ActiveScenarioItem {
