@@ -2,6 +2,7 @@ import {
   ActiveScenarioItem,
   ActiveScenarioData,
   ScenarioConditionModifier,
+  CONDITION_LABELS,
 } from "../../types";
 import { PlaneEventHandler } from "./plane_events/types";
 import { AircraftEventsList } from "./plane_events/types";
@@ -9,13 +10,15 @@ import { getAircraftEventHandler } from "./plane_events";
 import { SimConnectManager, SimStatus, emptySimStatus } from "./simconnect_manager";
 import { NavAidDistanceChecker } from "./navaid_distance_checker";
 
+import { ConditionKey } from "../../types";
+
 export class EventScheduler {
   private static instance: EventScheduler | null = null;
 
   private simConnectManager: SimConnectManager = new SimConnectManager();
   private previousSimStatus: SimStatus = emptySimStatus();
   private latestSimStatus: SimStatus = emptySimStatus();
-  private scenarios: ActiveScenarioItem[] = [];
+  private events: ActiveScenarioItem[] = [];
   private scenarioConditionsMet: Map<string, Set<string>> = new Map();
   private eventStatuses: Map<string, 'armed' | 'triggered'> = new Map();
   private aircraftEventHandler: PlaneEventHandler | null = null;
@@ -68,23 +71,23 @@ export class EventScheduler {
   private tick() {
     if (
       !this.simConnectManager.isConnected() ||
-      !this.scenarios ||
-      this.scenarios.length === 0 ||
+      !this.events ||
+      this.events.length === 0 ||
       !this.aircraftEventHandler
     ) {
       return;
     }
-    let nextScenarios = this.scenarios;
-    for (const scenario of this.scenarios) {
+    let nextScenarios = this.events;
+    for (const scenario of this.events) {
       const satisfied =
         this.scenarioConditionsMet.get(scenario.name) ?? new Set<string>();
 
       const simpleConditions = [
-        { key: "altitude",    label: "Altitude",      configured: !!scenario.conditions.altitude.value,                    modifier: scenario.conditions.altitude.modifier,    value: scenario.conditions.altitude.value,    currentVal: this.latestSimStatus.altitudeFeet,        previousVal: this.previousSimStatus.altitudeFeet },
-        { key: "altitudeAgl", label: "Altitude (AGL)", configured: !!scenario.conditions.altitudeAgl.value,               modifier: scenario.conditions.altitudeAgl.modifier, value: scenario.conditions.altitudeAgl.value, currentVal: this.latestSimStatus.altAboveGroundFeet,  previousVal: this.previousSimStatus.altAboveGroundFeet },
-        { key: "speed",       label: "Speed",          configured: !!scenario.conditions.speed.value,                      modifier: scenario.conditions.speed.modifier,       value: scenario.conditions.speed.value,       currentVal: this.latestSimStatus.airspeedKts,         previousVal: this.previousSimStatus.airspeedKts },
-        { key: "landingGear", label: "Landing gear",   configured: scenario.conditions.landingGear.value !== null,         modifier: scenario.conditions.landingGear.modifier, value: scenario.conditions.landingGear.value, currentVal: this.latestSimStatus.gearExtendedPercent, previousVal: this.previousSimStatus.gearExtendedPercent },
-        { key: "flapPosition", label: "Flap position", configured: scenario.conditions.flapPosition.value !== null,        modifier: scenario.conditions.flapPosition.modifier, value: scenario.conditions.flapPosition.value, currentVal: this.latestSimStatus.flapsLeftPercent,   previousVal: this.previousSimStatus.flapsLeftPercent },
+        { key: "altitude",    label: "Altitude",      configured: !!scenario.conditions?.altitude?.value,                    modifier: scenario.conditions?.altitude?.modifier,    value: scenario.conditions?.altitude?.value,    currentVal: this.latestSimStatus.altitudeFeet,        previousVal: this.previousSimStatus.altitudeFeet },
+        { key: "altitudeAgl", label: "Altitude (AGL)", configured: !!scenario.conditions?.altitudeAgl?.value,               modifier: scenario.conditions?.altitudeAgl?.modifier, value: scenario.conditions?.altitudeAgl?.value, currentVal: this.latestSimStatus.altAboveGroundFeet,  previousVal: this.previousSimStatus.altAboveGroundFeet },
+        { key: "speed",       label: "Speed",          configured: !!scenario.conditions?.speed?.value,                      modifier: scenario.conditions?.speed?.modifier,       value: scenario.conditions?.speed?.value,       currentVal: this.latestSimStatus.airspeedKts,         previousVal: this.previousSimStatus.airspeedKts },
+        { key: "landingGear", label: "Landing gear",   configured: scenario.conditions?.landingGear?.value !== null,         modifier: scenario.conditions?.landingGear?.modifier, value: scenario.conditions?.landingGear?.value, currentVal: this.latestSimStatus.gearExtendedPercent, previousVal: this.previousSimStatus.gearExtendedPercent },
+        { key: "flapPosition", label: "Flap position", configured: scenario.conditions?.flapPosition?.value !== null,        modifier: scenario.conditions?.flapPosition?.modifier, value: scenario.conditions?.flapPosition?.value, currentVal: this.latestSimStatus.flapsLeftPercent,   previousVal: this.previousSimStatus.flapsLeftPercent },
       ] as const;
 
       for (const cond of simpleConditions) {
@@ -121,8 +124,8 @@ export class EventScheduler {
 
       if (
         !satisfied.has("navAidDistance") &&
-        scenario.conditions.navAidDistance.value &&
-        scenario.conditions.navAidDistance.text &&
+        scenario.conditions?.navAidDistance?.value &&
+        scenario.conditions?.navAidDistance?.text &&
         currentPosition &&
         previousPosition &&
         this.airportsData[scenario.conditions.navAidDistance.text]
@@ -158,7 +161,7 @@ export class EventScheduler {
         this.scenarioConditionsMet.delete(scenario.name);
       }
     }
-    this.scenarios = nextScenarios;
+    this.events = nextScenarios;
   }
 
   private evaluateCondition(
@@ -213,34 +216,36 @@ export class EventScheduler {
       console.warn("No active scenarios found in the response");
       return;
     }
-    const scenarios = scenario.events.filter((s) => s.isActive);
-    console.log("Active scenarios:", JSON.stringify(scenarios, null, 2));
-    this.scenarios = scenarios;
-
+    const events = scenario.events.filter((e) => e.isActive);
+    console.log("Active scenarios:", JSON.stringify(events, null, 2));
+   
+    this.events = events;
     this.scenarioConditionsMet = new Map();
     this.eventStatuses = new Map();
-    for (const s of this.scenarios) {
-      this.eventStatuses.set(s.name, 'armed');
+   
+    for (const e of this.events) {
+      this.eventStatuses.set(e.name, 'armed');
       const initialSatisfied = new Set<string>();
       // Pre-satisfy conditions that have no value configured
-      if (!s?.conditions?.altitude?.value) initialSatisfied.add("altitude");
-      if (!s?.conditions?.altitudeAgl?.value) initialSatisfied.add("altitudeAgl");
-      if (!s?.conditions?.speed?.value) initialSatisfied.add("speed");
-      if (s?.conditions?.landingGear?.value === null)
-        initialSatisfied.add("landingGear");
-      if (s?.conditions?.flapPosition?.value === null)
-        initialSatisfied.add("flapPosition");
-      if (!s?.conditions?.navAidDistance?.value || !s?.conditions?.navAidDistance?.text) initialSatisfied.add("navAidDistance");
-      this.scenarioConditionsMet.set(s.name, initialSatisfied);
+      for (const s of Object.keys(CONDITION_LABELS)) {
+        const key = s as ConditionKey;
+        const eventConditions = e.conditions;
+        if (!eventConditions[key]?.value) {
+          initialSatisfied.add(key);
+        }
+      }
+      console.log(`Initial satisfied conditions for "${e.name}":`, Array.from(initialSatisfied));
+      this.scenarioConditionsMet.set(e.name, initialSatisfied);
     }
   }
 
   public async startScenario(): Promise<void> {
     console.log("Starting scenario activation");
-    if (!this.aircraftName || !this.scenarios || this.scenarios.length === 0) {
+    if (!this.aircraftName || !this.events || this.events.length === 0) {
       console.warn("No scenarios to activate");
       return;
     }
+    console.log(1);
     if (!this.simConnectManager.isConnected()) {
       try {
         await this.connect();
@@ -254,13 +259,14 @@ export class EventScheduler {
       }
     }
 
+    console.log(2);
     this.aircraftEventHandler = getAircraftEventHandler(
       this.aircraftName,
       this.simConnectManager.getHandle()!,
       this.availableEvents,
       this.handlerOptions,
     );
-
+console.log(3);
     if (!this.aircraftEventHandler) {
       console.warn(`No event handler found for aircraft: ${this.aircraftName}`);
       return;
@@ -276,7 +282,7 @@ export class EventScheduler {
       this.aircraftEventHandler.stop();
     }
     this.close();
-    this.scenarios = [];
+    this.events = [];
     this.scenarioConditionsMet = new Map();
     this.eventStatuses = new Map();
     this.airportsData = {};
@@ -288,10 +294,10 @@ export class EventScheduler {
 
   public async connect(): Promise<void> {
     const relevantIcaos = new Set<string>();
-    for (const scenario of this.scenarios) {
+    for (const scenario of this.events) {
       if (
-        scenario.conditions.navAidDistance.value &&
-        scenario.conditions.navAidDistance.text
+        scenario.conditions?.navAidDistance?.value &&
+        scenario.conditions?.navAidDistance?.text
       ) {
         relevantIcaos.add(scenario.conditions.navAidDistance.text);
       }

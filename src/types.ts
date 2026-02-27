@@ -31,3 +31,14 @@ export interface ActiveScenarioData {
 	user: string;
 	aircraft: string;
 }
+
+export type ConditionKey = keyof ScenarioConditions
+
+export const CONDITION_LABELS: Record<ConditionKey, string> = {
+  altitude: 'Altitude (MSL)',
+  altitudeAgl: 'Altitude (AGL)',
+  speed: 'Speed',
+  landingGear: 'Landing Gear',
+  flapPosition: 'Flap Position',
+  navAidDistance: 'NavAid Distance',
+}

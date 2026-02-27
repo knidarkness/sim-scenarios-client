@@ -1,16 +1,5 @@
 import { useState } from 'react'
-import type { ActiveScenarioItem, ScenarioConditions } from '../types'
-
-type ConditionKey = keyof ScenarioConditions
-
-const CONDITION_LABELS: Record<ConditionKey, string> = {
-  altitude: 'Altitude (MSL)',
-  altitudeAgl: 'Altitude (AGL)',
-  speed: 'Speed',
-  landingGear: 'Landing Gear',
-  flapPosition: 'Flap Position',
-  navAidDistance: 'NavAid Distance',
-}
+import { ActiveScenarioItem, CONDITION_LABELS, ConditionKey } from '../types'
 
 const LANDING_GEAR_LABELS: Record<string, string> = { '0': 'Up', '1': 'Down' }
 const FLAP_POSITION_LABELS: Record<string, string> = { '0': 'Up', '50': 'Partial', '100': 'Down' }
@@ -23,9 +12,11 @@ function resolveValue(key: ConditionKey, value: string | null): string | null {
 }
 
 function EventRow({ event, status }: { event: ActiveScenarioItem; status?: 'armed' | 'triggered' }) {
+  const notNullOrUndefined = <T,>(value: T | null | undefined): value is T => value !== null && value !== undefined;
+
   const activeConditions = (Object.keys(CONDITION_LABELS) as ConditionKey[])
     .map((key) => ({ key, label: CONDITION_LABELS[key], condition: event.conditions[key] }))
-    .filter(({ condition }) => condition?.modifier !== null && condition?.value !== null)
+    .filter(({ condition }) => condition?.modifier !== null && notNullOrUndefined(condition?.value))
 
   return (
     <div className="event-row">
@@ -37,20 +28,20 @@ function EventRow({ event, status }: { event: ActiveScenarioItem; status?: 'arme
 
       {activeConditions.length > 0 ? (
         <ul className="event-conditions-list">
-          {activeConditions.map(({ key, label, condition }) => (
+          {activeConditions.filter(({ condition }) => condition !== null).map(({ key, label, condition }) => (
             <li key={key} className="event-condition-item">
               <span className="event-condition-label">{label}</span>
               <span className="event-condition-sep">—</span>
               <span className="event-condition-value">
-                {condition.modifier}{' '}
-                {condition.value !== null && (
+                {condition?.modifier}{' '}
+                {condition?.value !== null && (
                   <strong>
-                    {resolveValue(key, condition.value)}
+                    {resolveValue(key, condition?.value)}
                     {key === 'navAidDistance' ? ' nm' : ''}
                   </strong>
                 )}
-                {'text' in condition && condition.text ? (
-                  <> from <strong>{condition.text}</strong></>
+                {!!condition && 'text' in condition && condition?.text ? (
+                  <> from <strong>{condition?.text}</strong></>
                 ) : null}
               </span>
             </li>
