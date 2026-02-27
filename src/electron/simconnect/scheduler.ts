@@ -223,14 +223,14 @@ export class EventScheduler {
       this.eventStatuses.set(s.name, 'armed');
       const initialSatisfied = new Set<string>();
       // Pre-satisfy conditions that have no value configured
-      if (!s.conditions.altitude.value) initialSatisfied.add("altitude");
-      if (!s.conditions.altitudeAgl.value) initialSatisfied.add("altitudeAgl");
-      if (!s.conditions.speed.value) initialSatisfied.add("speed");
-      if (s.conditions.landingGear.value === null)
+      if (!s?.conditions?.altitude?.value) initialSatisfied.add("altitude");
+      if (!s?.conditions?.altitudeAgl?.value) initialSatisfied.add("altitudeAgl");
+      if (!s?.conditions?.speed?.value) initialSatisfied.add("speed");
+      if (s?.conditions?.landingGear?.value === null)
         initialSatisfied.add("landingGear");
-      if (s.conditions.flapPosition.value === null)
+      if (s?.conditions?.flapPosition?.value === null)
         initialSatisfied.add("flapPosition");
-      if (!s.conditions.navAidDistance.value || !s.conditions.navAidDistance.text) initialSatisfied.add("navAidDistance");
+      if (!s?.conditions?.navAidDistance?.value || !s?.conditions?.navAidDistance?.text) initialSatisfied.add("navAidDistance");
       this.scenarioConditionsMet.set(s.name, initialSatisfied);
     }
   }
