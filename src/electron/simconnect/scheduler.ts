@@ -17,6 +17,7 @@ export class EventScheduler {
   private latestSimStatus: SimStatus = emptySimStatus();
   private scenarios: ActiveScenarioItem[] = [];
   private scenarioConditionsMet: Map<string, Set<string>> = new Map();
+  private eventStatuses: Map<string, 'armed' | 'triggered'> = new Map();
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private aircraftName: string | null = null;
   private navAidDistanceChecker = new NavAidDistanceChecker();
@@ -152,6 +153,7 @@ export class EventScheduler {
           `[Scheduler] All conditions satisfied for "${scenario.name}", activating event`,
         );
         this.aircraftEventHandler.activateEvent(scenario.name);
+        this.eventStatuses.set(scenario.name, 'triggered');
         nextScenarios = nextScenarios.filter((s) => s !== scenario);
         this.scenarioConditionsMet.delete(scenario.name);
       }
@@ -216,7 +218,9 @@ export class EventScheduler {
     this.scenarios = scenarios;
 
     this.scenarioConditionsMet = new Map();
+    this.eventStatuses = new Map();
     for (const s of this.scenarios) {
+      this.eventStatuses.set(s.name, 'armed');
       const initialSatisfied = new Set<string>();
       // Pre-satisfy conditions that have no value configured
       if (!s.conditions.altitude.value) initialSatisfied.add("altitude");
@@ -274,7 +278,12 @@ export class EventScheduler {
     this.close();
     this.scenarios = [];
     this.scenarioConditionsMet = new Map();
+    this.eventStatuses = new Map();
     this.airportsData = {};
+  }
+
+  public getEventStatuses(): Record<string, 'armed' | 'triggered'> {
+    return Object.fromEntries(this.eventStatuses);
   }
 
   public async connect(): Promise<void> {

@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld("simconnect", {
   activateScenarios: async () => ipcRenderer.invoke("simconnect:activateScenarios"),
   setAircraftHandlerOptions: (options: Record<string, any>) => ipcRenderer.invoke("simconnect:setHandlerOptions", options),
   setAvailableEvents: (events: any[]) => ipcRenderer.invoke("simconnect:setAvailableEvents", events),
+  getEventStatuses: () => ipcRenderer.invoke("simconnect:getEventStatuses"),
 });

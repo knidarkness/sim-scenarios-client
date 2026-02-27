@@ -82,6 +82,10 @@ app.whenReady().then(async () => {
     return { ok: true };
   });
 
+  ipcMain.handle("simconnect:getEventStatuses", () => {
+    return eventScheduler.getEventStatuses();
+  });
+
   createWindow();
 
 

@@ -10,5 +10,6 @@ interface Window {
 	clearScenarios(): unknown;
 	setAircraftHandlerOptions(options: Record<string, any>): unknown;
 	setAvailableEvents(events: any[]): unknown;
+	getEventStatuses(): Promise<Record<string, 'armed' | 'triggered'>>;
 	};
 }

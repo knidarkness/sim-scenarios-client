@@ -17,6 +17,7 @@ export default function HomePage() {
     const [scenarios, setScenarios] = useState<ActiveScenarioData | null>(null);
 
     const [scenarioState, setScenarioState] = useState<'not-fetched' | 'fetched' | 'activated' | 'fetch-failed'>('not-fetched');
+    const [eventStatuses, setEventStatuses] = useState<Record<string, 'armed' | 'triggered'> | undefined>(undefined);
 
     useEffect(() => {
         const fetchAvailableEvents = async () => {
@@ -62,6 +63,20 @@ export default function HomePage() {
         };
         checkVersion();
     }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion, setLatestAppVersion]);
+
+    useEffect(() => {
+        if (scenarioState !== 'activated') {
+            setEventStatuses(undefined);
+            return;
+        }
+        const poll = async () => {
+            const statuses = await window.simconnect?.getEventStatuses();
+            if (statuses) setEventStatuses(statuses);
+        };
+        poll();
+        const interval = setInterval(poll, 1000);
+        return () => clearInterval(interval);
+    }, [scenarioState]);
 
     const fetchScenarios = async (token: string) => {
         try {
@@ -159,7 +174,7 @@ export default function HomePage() {
             </div>
             <div className="spoilers-area">
                 {scenarios && (scenarioState === 'fetched' || scenarioState === 'activated') ? (
-                    <SpoilersSection events={scenarios.events} />
+                    <SpoilersSection events={scenarios.events} eventStatuses={eventStatuses} />
                 ) : (
                     <div className="spoilers-placeholder" />
                 )}

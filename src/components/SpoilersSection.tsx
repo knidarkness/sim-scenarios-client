@@ -22,7 +22,7 @@ function resolveValue(key: ConditionKey, value: string | null): string | null {
   return value
 }
 
-function EventRow({ event }: { event: ActiveScenarioItem }) {
+function EventRow({ event, status }: { event: ActiveScenarioItem; status?: 'armed' | 'triggered' }) {
   const activeConditions = (Object.keys(CONDITION_LABELS) as ConditionKey[])
     .map((key) => ({ key, label: CONDITION_LABELS[key], condition: event.conditions[key] }))
     .filter(({ condition }) => condition?.modifier !== null && condition?.value !== null)
@@ -30,6 +30,7 @@ function EventRow({ event }: { event: ActiveScenarioItem }) {
   return (
     <div className="event-row">
       <div className="event-row-header">
+        {status && <span className={`event-status-dot event-status-dot--${status}`} title={status} />}
         <span className="event-name">{event.name}</span>
         {!event.isActive && <span className="event-inactive-badge">inactive</span>}
       </div>
@@ -64,10 +65,16 @@ function EventRow({ event }: { event: ActiveScenarioItem }) {
 
 interface SpoilersSectionProps {
   events: ActiveScenarioItem[]
+  eventStatuses?: Record<string, 'armed' | 'triggered'>
 }
 
-export function SpoilersSection({ events }: SpoilersSectionProps) {
+export function SpoilersSection({ events, eventStatuses }: SpoilersSectionProps) {
   const [revealed, setRevealed] = useState(false)
+
+  const activeEvents = events.filter((e) => e.isActive)
+  const triggeredCount = eventStatuses
+    ? Object.values(eventStatuses).filter((s) => s === 'triggered').length
+    : 0
 
   if (!revealed) {
     return (
@@ -87,6 +94,9 @@ export function SpoilersSection({ events }: SpoilersSectionProps) {
           >
             Show event details (spoilers)
           </button>
+          {eventStatuses && (
+            <p className="spoilers-counter">{triggeredCount} / {activeEvents.length} events triggered</p>
+          )}
         </div>
       </div>
     )
@@ -106,7 +116,7 @@ export function SpoilersSection({ events }: SpoilersSectionProps) {
       </div>
       <div className="spoilers-events-list">
         {events.map((event, i) => (
-          <EventRow key={event.name + i} event={event} />
+          <EventRow key={event.name + i} event={event} status={eventStatuses?.[event.name]} />
         ))}
       </div>
     </div>
