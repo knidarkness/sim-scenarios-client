@@ -23,18 +23,15 @@ export default function SettingsPage() {
 
     return (
         <main className="app">
-            <div className="settings-header">
-                <h1>Settings</h1>
+            <div className="app-header">
+                <p className="app-title">Settings</p>
             </div>
 
-            <div className="message-box" style={{ marginTop: "24px", textAlign: "left" }}>
-                <div style={{ marginBottom: "16px" }}>
-                    <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                        FSUIPC WebSocket Address
-                    </label>
+            <div className="settings-form">
+                <div className="settings-field">
+                    <label className="settings-label">FSUIPC WebSocket Address</label>
                     <input
                         className="token-input-field"
-                        style={{ width: "100%" }}
                         type="text"
                         placeholder="e.g. ws://localhost:2048/fsuipc/"
                         value={fsuipcAddress}
@@ -42,13 +39,10 @@ export default function SettingsPage() {
                     />
                 </div>
 
-                <div style={{ marginBottom: "16px" }}>
-                    <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                        Fenix API Address
-                    </label>
+                <div className="settings-field">
+                    <label className="settings-label">Fenix API Address</label>
                     <input
                         className="token-input-field"
-                        style={{ width: "100%" }}
                         type="text"
                         placeholder="e.g. http://localhost:8083"
                         value={fenixAddress}
@@ -56,13 +50,10 @@ export default function SettingsPage() {
                     />
                 </div>
 
-                <div style={{ marginBottom: "16px" }}>
-                    <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                        Back-end API Address
-                    </label>
+                <div className="settings-field">
+                    <label className="settings-label">Back-end API Address</label>
                     <input
                         className="token-input-field"
-                        style={{ width: "100%" }}
                         type="text"
                         placeholder="e.g. http://localhost:3000"
                         value={apiAddress}
@@ -70,12 +61,10 @@ export default function SettingsPage() {
                     />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <button style={{ padding: "8px 20px", borderRadius: "8px", border: "1px solid #0ea5e9", cursor: "pointer" }} onClick={() => navigate("/")}>← Back</button>
-                    <button onClick={handleSave} style={{ padding: "8px 20px", borderRadius: "8px", border: "1px solid #0ea5e9", cursor: "pointer" }}>
-                        Save
-                    </button>
-                    {saved && <span style={{ color: "#0ea5e9", fontWeight: 500 }}>Saved!</span>}
+                <div className="settings-actions">
+                    <button className="back-button" onClick={() => navigate("/")}>← Back</button>
+                    <button className="save-button" onClick={handleSave}>Save</button>
+                    {saved && <span className="saved-indicator">Saved!</span>}
                 </div>
             </div>
         </main>

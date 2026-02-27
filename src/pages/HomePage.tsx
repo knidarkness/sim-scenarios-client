@@ -118,25 +118,35 @@ export default function HomePage() {
             default:
                 return "";
         }
-    }
+    };
+
+    const getMessageBoxClass = () => {
+        switch (scenarioState) {
+            case 'fetch-failed': return "message-box message-box--error";
+            case 'fetched': return "message-box message-box--ready";
+            case 'activated': return "message-box message-box--active";
+            default: return "message-box";
+        }
+    };
 
     return (
         <main className="app">
+            <div className="app-header">
+                <p className="app-title">Sim Scenarios</p>
+            </div>
             <div className="token-input">
-                <label className="token-input-label">Please paste your scenario code below</label>
+                <label className="token-input-label">Scenario code</label>
                 <input
                     type="text"
                     className="token-input-field"
                     disabled={scenarioState === 'activated'}
                     onChange={(e) => setToken(e.target.value)}
                     value={token}
+                    placeholder="Paste your scenario token here"
                 />
-
             </div>
-            <div className="message-box">
-                <p className="message-p">
-                    {getMessage()}
-                </p>
+            <div className={getMessageBoxClass()}>
+                <p className="message-p">{getMessage()}</p>
             </div>
             <div className="action-buttons-container">
                 <button className="action-button settings-button" disabled={scenarioState === 'activated'} onClick={() => navigate("/settings")}>Settings</button>

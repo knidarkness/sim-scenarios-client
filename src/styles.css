@@ -30,45 +30,102 @@ h1 {
   font-size: 1.1rem;
 }
 
+/* App header / title */
+.app-header {
+  width: 90%;
+  margin: 16px auto 4px;
+  text-align: left;
+}
+
+.app-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0c4a6e;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Token input */
 .token-input {
   width: 90%;
-  margin: 24px auto;
+  margin: 20px auto 0;
 }
 
 .token-input-label {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: block;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: #475569;
   text-align: left;
 }
 
 .token-input-field {
   display: block;
-  padding: 8px;
-  border: 1px solid #0ea5e9;
+  padding: 8px 10px;
+  border: 1px solid #bae6fd;
   border-radius: 8px;
   flex-grow: 1;
-  height: 30px;
+  height: 34px;
   width: 100%;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
 }
 
+.token-input-field:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 2px #bae6fd66;
+}
 
+/* Message box */
 .message-box {
-  border: 2px solid #0ea5e9;
-  border-radius: 8px;
-  padding: 12px;
-  background: #e0f2fe;
+  border: 1.5px solid #bae6fd;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #f0f9ff;
   width: 90%;
-  margin: 16px auto;
+  margin: 14px auto;
+}
+
+.message-box--error {
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.message-box--ready {
+  border-color: #6ee7b7;
+  background: #f0fdf4;
+}
+
+.message-box--active {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
 }
 
 .message-p {
   margin: 0;
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.5;
 }
 
-button:hover {
-  background: #e0f2fe;
+/* Buttons */
+button {
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .main-header {
@@ -89,43 +146,39 @@ button:hover {
 
 .action-buttons-container {
   width: 90%;
-  margin: 16px auto;
+  margin: 14px auto 0;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-}
-
-
-.back-button {
-  border: 1px solid #0ea5e9;
-  background: #fff;
-  color: #0c4a6e;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  height: 30px;
+  gap: 10px;
 }
 
 .action-button {
-  border: 1px solid #0ea5e9;
+  border: 1.5px solid #bae6fd;
   background: #fff;
   color: #0c4a6e;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   cursor: pointer;
-  width: 100px;
-  margin: auto 20px;
-  height: 30px;
-  flex-grow: 1;
+  height: 34px;
+  flex: 1;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.action-button:first-child {
-  margin-left: 0;
+.back-button {
+  border: 1.5px solid #bae6fd;
+  background: #fff;
+  color: #0c4a6e;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  height: 34px;
 }
 
-.action-button:last-child {
-  margin-right: 0;
+.settings-button {
+  flex: 0 0 auto;
+  width: auto;
 }
 
 .stop-button {
@@ -134,8 +187,62 @@ button:hover {
   color: #991b1b;
 }
 
-.activate-button, .prefetch-button {
+.activate-button {
   background: #d1fae5;
   border-color: #6ee7b7;
   color: #065f46;
+}
+
+.prefetch-button {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  color: #075985;
+}
+
+/* Settings form */
+.settings-form {
+  width: 90%;
+  margin: 20px auto 0;
+  text-align: left;
+}
+
+.settings-field {
+  margin-bottom: 16px;
+}
+
+.settings-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.save-button {
+  border: 1.5px solid #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 20px;
+  cursor: pointer;
+  height: 34px;
+  font-weight: 500;
+}
+
+.save-button:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.saved-indicator {
+  font-size: 0.85rem;
+  color: #0ea5e9;
+  font-weight: 500;
 }
