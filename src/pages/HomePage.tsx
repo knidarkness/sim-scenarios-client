@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ActiveScenarioData } from "../types";
 import useClientAppStore from "../store";
 import { SpoilersSection } from "../components/SpoilersSection";
+import { fetchAvailableEvents, fetchAppVersion, fetchActiveScenario, recordScenarioRun } from "../api";
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -20,14 +21,9 @@ export default function HomePage() {
     const [eventStatuses, setEventStatuses] = useState<Record<string, 'armed' | 'triggered'> | undefined>(undefined);
 
     useEffect(() => {
-        const fetchAvailableEvents = async () => {
+        const loadAvailableEvents = async () => {
             try {
-                const response = await fetch(`${apiBackend}/scenario/availableEvents`);
-                if (!response.ok) {
-                    console.error("Failed to fetch available events:", response.status);
-                    return;
-                }
-                const events = await response.json();
+                const events = await fetchAvailableEvents(apiBackend);
                 setAvailableEvents(events);
                 await window.simconnect?.setAvailableEvents(events);
                 console.log("Available events loaded from API:", events.length, "aircraft");
@@ -35,31 +31,24 @@ export default function HomePage() {
                 console.error("Failed to fetch available events:", error);
             }
         };
-        fetchAvailableEvents();
+        loadAvailableEvents();
     }, [apiBackend, setAvailableEvents]);
 
     useEffect(() => {
+        if (ignoredUpdateVersion) return;
         const checkVersion = async () => {
-            if (ignoredUpdateVersion) {
-                return;
-            }
             const currentAppVersion = await window.simconnect?.getAppVersion();
             try {
-                const latestAppVersionResponse = await fetch(`${apiBackend}/appversion`);
-                const latestAppVersionData = await latestAppVersionResponse.json();
-                const latestAppVersion: string = latestAppVersionData.version;
+                const latestAppVersion = await fetchAppVersion(apiBackend);
                 const patchVersionLatest = parseInt(latestAppVersion.split(".").pop() || "0");
                 const patchVersionCurrent = parseInt(currentAppVersion?.split(".").pop() || "0");
-
                 setLatestAppVersion(latestAppVersion);
-
                 if (patchVersionLatest > patchVersionCurrent) {
                     navigate("/update", { state: { latestAppVersion } });
                 }
             } catch (error) {
                 console.error("Failed to check app version:", error);
             }
-
         };
         checkVersion();
     }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion, setLatestAppVersion]);
@@ -78,24 +67,16 @@ export default function HomePage() {
         return () => clearInterval(interval);
     }, [scenarioState]);
 
-    const fetchScenarios = async (token: string) => {
+    const preFetchScenarios = async (token: string) => {
         try {
-            const url = new URL(`${apiBackend}/scenario/activeScenario`);
-            url.searchParams.set("token", token);
-            console.log("Fetching scenarios with token:", token);
-            const response = await fetch(url.toString());
-            if (response.status !== 200) {
-                setScenarioState('fetch-failed');
-                return null;
-            }
-            const scenario = await response.json() as ActiveScenarioData;
+            const scenario = await fetchActiveScenario(apiBackend, token);
             console.log("Scenarios:", scenario);
             setScenarios(scenario);
-            return scenario;
+            await window.simconnect?.setScenarios(scenario);
+            setScenarioState('fetched');
         } catch (error) {
             console.error("Failed to fetch scenarios:", error);
             setScenarioState('fetch-failed');
-            return null;
         }
     };
 
@@ -104,15 +85,10 @@ export default function HomePage() {
         await window.simconnect?.setScenarios(scenarios);
         await window.simconnect?.activateScenarios();
         setScenarioState('activated');
-    };
-
-    const preFetchScenarios = async (token: string) => {
-        const scenarios = await fetchScenarios(token);
-        if (!scenarios) {
-            return;
+        if (scenarios?._id && scenarios?.token) {
+            recordScenarioRun(apiBackend, scenarios._id, scenarios.token)
+                .catch((error) => console.error("Failed to record scenario run:", error));
         }
-        await window.simconnect?.setScenarios(scenarios);
-        setScenarioState('fetched');
     };
 
     const stopScenarios = () => {
