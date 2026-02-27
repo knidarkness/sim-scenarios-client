@@ -157,9 +157,13 @@ export default function HomePage() {
                     </>
                 )}
             </div>
-            {scenarios && (scenarioState === 'fetched' || scenarioState === 'activated') && (
-                <SpoilersSection events={scenarios.events} />
-            )}
+            <div className="spoilers-area">
+                {scenarios && (scenarioState === 'fetched' || scenarioState === 'activated') ? (
+                    <SpoilersSection events={scenarios.events} />
+                ) : (
+                    <div className="spoilers-placeholder" />
+                )}
+            </div>
         </main>
     );
 }
