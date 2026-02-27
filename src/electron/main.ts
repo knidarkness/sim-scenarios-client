@@ -21,7 +21,7 @@ function createWindow(): void {
   const win = new BrowserWindow({
     title: windowTitle,
     width: 450,
-    height: 310,
+    height: 450,
     resizable: false,
     useContentSize: true,
     autoHideMenuBar: true,

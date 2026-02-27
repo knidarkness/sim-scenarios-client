@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActiveScenarioData } from "../types";
 import useClientAppStore from "../store";
+import { SpoilersSection } from "../components/SpoilersSection";
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -131,9 +132,6 @@ export default function HomePage() {
 
     return (
         <main className="app">
-            <div className="app-header">
-                <p className="app-title">Sim Scenarios</p>
-            </div>
             <div className="token-input">
                 <label className="token-input-label">Scenario code</label>
                 <input
@@ -159,6 +157,9 @@ export default function HomePage() {
                     </>
                 )}
             </div>
+            {scenarios && (scenarioState === 'fetched' || scenarioState === 'activated') && (
+                <SpoilersSection events={scenarios.events} />
+            )}
         </main>
     );
 }
