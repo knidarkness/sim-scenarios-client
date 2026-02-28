@@ -84,6 +84,43 @@ h1 {
   box-shadow: 0 0 0 2px #bae6fd66;
 }
 
+.token-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.token-input-wrapper .token-input-field {
+  padding-right: 36px;
+}
+
+.token-paste-button {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.token-paste-button:hover:not(:disabled) {
+  color: #0ea5e9;
+  background: #e0f2fe;
+}
+
+.token-paste-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Message box */
 .message-box {
   border: 1.5px solid #bae6fd;

@@ -125,14 +125,32 @@ export default function HomePage() {
         <main className="app">
             <div className="token-input">
                 <label className="token-input-label">Scenario code</label>
-                <input
-                    type="text"
-                    className="token-input-field"
-                    disabled={scenarioState === 'activated'}
-                    onChange={(e) => setToken(e.target.value)}
-                    value={token}
-                    placeholder="Paste your scenario token here"
-                />
+                <div className="token-input-wrapper">
+                    <input
+                        type="text"
+                        className="token-input-field"
+                        disabled={scenarioState === 'activated'}
+                        onChange={(e) => setToken(e.target.value)}
+                        value={token}
+                        placeholder="Paste your scenario token here"
+                    />
+                    <button
+                        className="token-paste-button"
+                        disabled={scenarioState === 'activated'}
+                        title="Paste from clipboard"
+                        onClick={async () => {
+                            const text = await navigator.clipboard.readText();
+                            setToken(text);
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="2" width="10" height="4" rx="1" />
+                            <path d="M5 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1" />
+                            <rect x="9" y="2" width="10" height="4" rx="1" />
+                            <path d="M9 12h6M9 16h6" />
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div className={getMessageBoxClass()}>
                 <p className="message-p">{getMessage()}</p>
