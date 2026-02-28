@@ -50,6 +50,20 @@ function EventRow({ event, status }: { event: ActiveScenarioItem; status?: 'arme
       ) : (
         <p className="event-no-conditions">No trigger conditions set</p>
       )}
+      {!!event.delaySeconds && (
+        <>
+          <hr className="event-delay-sep" />
+          <div className="event-condition-item">
+
+          <span className="event-condition-label">Delay</span>
+          <span className="event-condition-sep">—</span>
+          <span className="event-condition-value">
+            <strong>{event.delaySeconds}</strong>
+            {" seconds"}
+          </span>
+          </div>
+        </>
+      )}
     </div>
   )
 }

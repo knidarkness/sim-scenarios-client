@@ -7,7 +7,11 @@ import {
 import { PlaneEventHandler } from "./plane_events/types";
 import { AircraftEventsList } from "./plane_events/types";
 import { getAircraftEventHandler } from "./plane_events";
-import { SimConnectManager, SimStatus, emptySimStatus } from "./simconnect_manager";
+import {
+  SimConnectManager,
+  SimStatus,
+  emptySimStatus,
+} from "./simconnect_manager";
 import { NavAidDistanceChecker } from "./navaid_distance_checker";
 
 import { ConditionKey } from "../../types";
@@ -20,7 +24,7 @@ export class EventScheduler {
   private latestSimStatus: SimStatus = emptySimStatus();
   private events: ActiveScenarioItem[] = [];
   private scenarioConditionsMet: Map<string, Set<string>> = new Map();
-  private eventStatuses: Map<string, 'armed' | 'triggered'> = new Map();
+  private eventStatuses: Map<string, "armed" | "triggered"> = new Map();
   private aircraftEventHandler: PlaneEventHandler | null = null;
   private aircraftName: string | null = null;
   private navAidDistanceChecker = new NavAidDistanceChecker();
@@ -78,26 +82,73 @@ export class EventScheduler {
       return;
     }
     let nextScenarios = this.events;
-    for (const scenario of this.events) {
+    for (const event of this.events) {
       const satisfied =
-        this.scenarioConditionsMet.get(scenario.name) ?? new Set<string>();
+        this.scenarioConditionsMet.get(event.name) ?? new Set<string>();
 
       const simpleConditions = [
-        { key: "altitude",    label: "Altitude",      configured: !!scenario.conditions?.altitude?.value,                    modifier: scenario.conditions?.altitude?.modifier,    value: scenario.conditions?.altitude?.value,    currentVal: this.latestSimStatus.altitudeFeet,        previousVal: this.previousSimStatus.altitudeFeet },
-        { key: "altitudeAgl", label: "Altitude (AGL)", configured: !!scenario.conditions?.altitudeAgl?.value,               modifier: scenario.conditions?.altitudeAgl?.modifier, value: scenario.conditions?.altitudeAgl?.value, currentVal: this.latestSimStatus.altAboveGroundFeet,  previousVal: this.previousSimStatus.altAboveGroundFeet },
-        { key: "speed",       label: "Speed",          configured: !!scenario.conditions?.speed?.value,                      modifier: scenario.conditions?.speed?.modifier,       value: scenario.conditions?.speed?.value,       currentVal: this.latestSimStatus.airspeedKts,         previousVal: this.previousSimStatus.airspeedKts },
-        { key: "landingGear", label: "Landing gear",   configured: scenario.conditions?.landingGear?.value !== null,         modifier: scenario.conditions?.landingGear?.modifier, value: scenario.conditions?.landingGear?.value, currentVal: this.latestSimStatus.gearExtendedPercent, previousVal: this.previousSimStatus.gearExtendedPercent },
-        { key: "flapPosition", label: "Flap position", configured: scenario.conditions?.flapPosition?.value !== null,        modifier: scenario.conditions?.flapPosition?.modifier, value: scenario.conditions?.flapPosition?.value, currentVal: this.latestSimStatus.flapsLeftPercent,   previousVal: this.previousSimStatus.flapsLeftPercent },
+        {
+          key: "altitude",
+          label: "Altitude",
+          configured: !!event.conditions?.altitude?.value,
+          modifier: event.conditions?.altitude?.modifier,
+          value: event.conditions?.altitude?.value,
+          currentVal: this.latestSimStatus.altitudeFeet,
+          previousVal: this.previousSimStatus.altitudeFeet,
+        },
+        {
+          key: "altitudeAgl",
+          label: "Altitude (AGL)",
+          configured: !!event.conditions?.altitudeAgl?.value,
+          modifier: event.conditions?.altitudeAgl?.modifier,
+          value: event.conditions?.altitudeAgl?.value,
+          currentVal: this.latestSimStatus.altAboveGroundFeet,
+          previousVal: this.previousSimStatus.altAboveGroundFeet,
+        },
+        {
+          key: "speed",
+          label: "Speed",
+          configured: !!event.conditions?.speed?.value,
+          modifier: event.conditions?.speed?.modifier,
+          value: event.conditions?.speed?.value,
+          currentVal: this.latestSimStatus.airspeedKts,
+          previousVal: this.previousSimStatus.airspeedKts,
+        },
+        {
+          key: "landingGear",
+          label: "Landing gear",
+          configured: event.conditions?.landingGear?.value !== null,
+          modifier: event.conditions?.landingGear?.modifier,
+          value: event.conditions?.landingGear?.value,
+          currentVal: this.latestSimStatus.gearExtendedPercent,
+          previousVal: this.previousSimStatus.gearExtendedPercent,
+        },
+        {
+          key: "flapPosition",
+          label: "Flap position",
+          configured: event.conditions?.flapPosition?.value !== null,
+          modifier: event.conditions?.flapPosition?.modifier,
+          value: event.conditions?.flapPosition?.value,
+          currentVal: this.latestSimStatus.flapsLeftPercent,
+          previousVal: this.previousSimStatus.flapsLeftPercent,
+        },
       ] as const;
 
       for (const cond of simpleConditions) {
         if (
           !satisfied.has(cond.key) &&
           cond.configured &&
-          this.evaluateCondition(cond.modifier, cond.value, cond.currentVal, cond.previousVal)
+          this.evaluateCondition(
+            cond.modifier,
+            cond.value,
+            cond.currentVal,
+            cond.previousVal,
+          )
         ) {
           satisfied.add(cond.key);
-          console.log(`[Scheduler] ${cond.label} condition satisfied for "${scenario.name}"`);
+          console.log(
+            `[Scheduler] ${cond.label} condition satisfied for "${event.name}"`,
+          );
         }
       }
 
@@ -124,18 +175,18 @@ export class EventScheduler {
 
       if (
         !satisfied.has("navAidDistance") &&
-        scenario.conditions?.navAidDistance?.value &&
-        scenario.conditions?.navAidDistance?.text &&
+        event.conditions?.navAidDistance?.value &&
+        event.conditions?.navAidDistance?.text &&
         currentPosition &&
         previousPosition &&
-        this.airportsData[scenario.conditions.navAidDistance.text]
+        this.airportsData[event.conditions.navAidDistance.text]
       ) {
         const navAidPosition =
-          this.airportsData[scenario.conditions.navAidDistance.text];
+          this.airportsData[event.conditions.navAidDistance.text];
         if (
           this.navAidDistanceChecker.evaluate(
-            scenario.conditions.navAidDistance.modifier,
-            scenario.conditions.navAidDistance.value,
+            event.conditions.navAidDistance.modifier,
+            event.conditions.navAidDistance.value,
             navAidPosition,
             currentPosition,
             previousPosition,
@@ -143,22 +194,37 @@ export class EventScheduler {
         ) {
           satisfied.add("navAidDistance");
           console.log(
-            `[Scheduler] NavAid distance condition satisfied for "${scenario.name}"`,
+            `[Scheduler] NavAid distance condition satisfied for "${event.name}"`,
           );
         }
       }
 
-      this.scenarioConditionsMet.set(scenario.name, satisfied);
+      this.scenarioConditionsMet.set(event.name, satisfied);
 
       const allSatisfied = satisfied.size === 6;
       if (allSatisfied) {
         console.log(
-          `[Scheduler] All conditions satisfied for "${scenario.name}", activating event`,
+          `[Scheduler] All conditions satisfied for "${event.name}", activating event`,
         );
-        this.aircraftEventHandler.activateEvent(scenario.name);
-        this.eventStatuses.set(scenario.name, 'triggered');
-        nextScenarios = nextScenarios.filter((s) => s !== scenario);
-        this.scenarioConditionsMet.delete(scenario.name);
+
+        const trigger = () => {
+          if (!this.aircraftEventHandler) {
+            console.error(
+              "No aircraft event handler available when trying to trigger event",
+            );
+            return;
+          }
+          this.aircraftEventHandler.activateEvent(event.name);
+          this.eventStatuses.set(event.name, "triggered");
+        }
+
+        setTimeout(
+          trigger,
+          event.delaySeconds ? event.delaySeconds * 1000 : 0,
+        );
+
+        nextScenarios = nextScenarios.filter((s) => s !== event);
+        this.scenarioConditionsMet.delete(event.name);
       }
     }
     this.events = nextScenarios;
@@ -218,13 +284,13 @@ export class EventScheduler {
     }
     const events = scenario.events.filter((e) => e.isActive);
     console.log("Active scenarios:", JSON.stringify(events, null, 2));
-   
+
     this.events = events;
     this.scenarioConditionsMet = new Map();
     this.eventStatuses = new Map();
-   
+
     for (const e of this.events) {
-      this.eventStatuses.set(e.name, 'armed');
+      this.eventStatuses.set(e.name, "armed");
       const initialSatisfied = new Set<string>();
       // Pre-satisfy conditions that have no value configured
       for (const s of Object.keys(CONDITION_LABELS)) {
@@ -234,7 +300,10 @@ export class EventScheduler {
           initialSatisfied.add(key);
         }
       }
-      console.log(`Initial satisfied conditions for "${e.name}":`, Array.from(initialSatisfied));
+      console.log(
+        `Initial satisfied conditions for "${e.name}":`,
+        Array.from(initialSatisfied),
+      );
       this.scenarioConditionsMet.set(e.name, initialSatisfied);
     }
   }
@@ -245,7 +314,7 @@ export class EventScheduler {
       console.warn("No scenarios to activate");
       return;
     }
-    console.log(1);
+
     if (!this.simConnectManager.isConnected()) {
       try {
         await this.connect();
@@ -259,14 +328,13 @@ export class EventScheduler {
       }
     }
 
-    console.log(2);
     this.aircraftEventHandler = getAircraftEventHandler(
       this.aircraftName,
       this.simConnectManager.getHandle()!,
       this.availableEvents,
       this.handlerOptions,
     );
-console.log(3);
+
     if (!this.aircraftEventHandler) {
       console.warn(`No event handler found for aircraft: ${this.aircraftName}`);
       return;
@@ -288,7 +356,7 @@ console.log(3);
     this.airportsData = {};
   }
 
-  public getEventStatuses(): Record<string, 'armed' | 'triggered'> {
+  public getEventStatuses(): Record<string, "armed" | "triggered"> {
     return Object.fromEntries(this.eventStatuses);
   }
 
