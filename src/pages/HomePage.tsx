@@ -3,17 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { ActiveScenarioData } from "../types";
 import useClientAppStore from "../store";
 import { SpoilersSection } from "../components/SpoilersSection";
-import { fetchAvailableEvents, fetchAppVersion, fetchActiveScenario, recordScenarioRun } from "../api";
+import { fetchAvailableEvents, fetchActiveScenario, recordScenarioRun } from "../api";
+import { useVersionCheck } from "../hooks/useVersionCheck";
 
 export default function HomePage() {
     const navigate = useNavigate();
     const [token, setToken] = useState<string>("");
 
     const apiBackend = useClientAppStore((state) => state.backendApiAddress);
-    const ignoredUpdateVersion = useClientAppStore((state) => state.ignoredUpdateVersion);
-    const setIgnoredUpdateVersion = useClientAppStore((state) => state.setIgnoredUpdateVersion);
     const setAvailableEvents = useClientAppStore((state) => state.setAvailableEvents);
-    const setLatestAppVersion = useClientAppStore((state) => state.setLatestAppVersion);
+
+    useVersionCheck(apiBackend);
 
     const [scenarios, setScenarios] = useState<ActiveScenarioData | null>(null);
 
@@ -33,25 +33,6 @@ export default function HomePage() {
         };
         loadAvailableEvents();
     }, [apiBackend, setAvailableEvents]);
-
-    useEffect(() => {
-        if (ignoredUpdateVersion) return;
-        const checkVersion = async () => {
-            const currentAppVersion = await window.simconnect?.getAppVersion();
-            try {
-                const latestAppVersion = await fetchAppVersion(apiBackend);
-                const patchVersionLatest = parseInt(latestAppVersion.split(".").pop() || "0");
-                const patchVersionCurrent = parseInt(currentAppVersion?.split(".").pop() || "0");
-                setLatestAppVersion(latestAppVersion);
-                if (patchVersionLatest > patchVersionCurrent) {
-                    navigate("/update", { state: { latestAppVersion } });
-                }
-            } catch (error) {
-                console.error("Failed to check app version:", error);
-            }
-        };
-        checkVersion();
-    }, [apiBackend, ignoredUpdateVersion, navigate, setIgnoredUpdateVersion, setLatestAppVersion]);
 
     useEffect(() => {
         if (scenarioState !== 'activated') {
